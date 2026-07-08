@@ -1,0 +1,262 @@
+/* ================================================================
+ * hal_entry.c
+ * 综合主入口：雷达解析 + OLED显示 + MY1680语音 + 异常声光报警 + 温度监测 + 606端口循环控制
+ * ================================================================ */
+
+#include "hal_data.h"
+#include "led.h"
+#include "buzzer.h"
+#include "my1680.h"
+#include "oled.h"
+#include "radar_uart.h"
+#include "radar_display.h"
+#include "ntc_temp.h"    // 引入外部解耦的温度采集模块
+#include <stdio.h>       // 用于 sprintf 格式化字符串
+
+typedef enum
+{
+    FALL_AUDIO_IDLE = 0,
+    FALL_AUDIO_REQUEST_PLAY1,
+    FALL_AUDIO_WAIT_PLAY1,
+    FALL_AUDIO_REQUEST_PLAY2,
+    FALL_AUDIO_WAIT_PLAY2
+} fall_audio_state_t;
+
+FSP_CPP_HEADER
+void R_BSP_WarmStart(bsp_warm_start_event_t event);
+FSP_CPP_FOOTER
+
+void hal_entry(void)
+{
+    /* ---- 1. 硬件外设初始�?---- */
+    LED_Init();
+    Buzzer_Init();
+    OLED_Init();
+    MY1680_Init(); // 内部已包�?350ms 启动延时，确保语音模块就�?
+    Radar_Init();
+    NTC_Init();    // 初始�?ADC 测温模块
+
+    /* ---- 2. 初始状态设�?---- */
+    RadarDisplay_Init();
+    LED_Off();     // 405 正常状态不亮，仅跌倒时参与交替闪烁
+    LED202_On();   // 202 正常运行常亮
+    LED604_Off();  // 604 默认关闭，检测到有人再点�?
+    
+    /* 新增�?06端口（MOS管开关）开机默认点�?导�?*/
+    R_IOPORT_PinWrite(&g_ioport_ctrl, BSP_IO_PORT_06_PIN_06, BSP_IO_LEVEL_HIGH);
+
+    Buzzer_On();   // 开机滴一�?
+    R_BSP_SoftwareDelay(100, BSP_DELAY_UNITS_MILLISECONDS);
+    Buzzer_Off();  // 开机提示后，恢复静�?
+
+    /* ===== 新增：开机首播音�?===== */
+    // 假设播放根目录或 55 子目录下的第 1 首音频，此处参数沿用您下文的 (55u, 1u)
+    // 如果是根目录或其他指定音频，可根据实�?API 进行调整
+    MY1680_PlayMusic_SubDir(55, 1);
+    // 给语音芯片留出短暂的串口命令响应时间
+    R_BSP_SoftwareDelay(50, BSP_DELAY_UNITS_MILLISECONDS); 
+    /* ============================ */
+
+    /* ---- 3. 主循环时间与状态变�?---- */
+    uint32_t led_timer       = 0u;
+    uint32_t buzzer_timer    = 0u;
+    uint32_t temp_timer      = 0u;    // 温度采集非阻塞计时器
+    
+    /* 新增�?06端口专属非阻塞计时器与状态位 */
+    uint32_t mos_606_timer   = 0u;    // 606端口时间累加�?
+    bool mos_606_is_on       = true;  // 记录当前606是亮还是灭，初始为true（亮�?
+
+    bool last_fall_state     = false; // 用于记录上一帧的跌倒状态，实现边沿触发逻辑
+    bool fall_led_phase_405  = true;  // 跌倒时 405/202 交替闪烁相位
+    fall_audio_state_t fall_audio_state = FALL_AUDIO_IDLE;
+    char temp_str[10];                // 用于存储格式化后的温度字符串
+
+    /* ================================================================
+     * 主循环，基准 Tick: 10ms
+     * ================================================================ */
+    while (1)
+    {
+        /* 产生 10ms 的基准心�?*/
+        R_BSP_SoftwareDelay(10u, BSP_DELAY_UNITS_MILLISECONDS);
+        led_timer    += 10u;
+        buzzer_timer += 10u;
+        temp_timer   += 10u;
+        mos_606_timer += 10u; // 新增�?06计时器每10ms累加一�?
+
+        /* ---- A. 核心数据链路，必须保持非阻塞实时运行 ---- */
+        Radar_Process();                       // 消耗缓冲区，推进解析状态机
+        radar_data_t *p_data = Radar_GetData(); // 获取最新雷达物理量
+        RadarDisplay_Update(p_data, NULL);     // 按需刷新 OLED，内部有标志位过滤冗余刷�?
+
+        bool current_fall        = (p_data->is_fall == 1);
+        bool current_human       = (p_data->is_human == 1);
+        bool current_presence_ok = p_data->presence_updated;
+
+        /* ---- B. 人员检测与 604 LED 逻辑 ---- */
+        if (current_fall)
+        {
+            LED604_Off(); // 跌倒发生时 604 应灭
+        }
+        else if (current_presence_ok && current_human)
+        {
+            LED604_On();  // 检测到有人�?604 常亮
+        }
+        else
+        {
+            LED604_Off(); // 非跌倒且无人或还未获�?presence 数据�?604 关闭
+        }
+
+        /* ---- C. 202 / 405 LED 与蜂鸣器跌倒逻辑 ---- */
+        if (current_fall)
+        {
+            if (!last_fall_state)
+            {
+                led_timer      = 0u;
+                buzzer_timer   = 0u;
+                fall_led_phase_405 = true;
+                LED_On();        // 405 起始�?
+                LED202_Off();    // 202 起始灭，形成交替
+                Buzzer_On();     // 415 开始鸣�?
+                last_fall_state = true;
+            }
+
+            if (led_timer >= 200u)
+            {
+                led_timer = 0u;
+                if (fall_led_phase_405)
+                {
+                    LED_Off();    // 405 �?
+                    LED202_On();  // 202 开
+                }
+                else
+                {
+                    LED_On();     // 405 开
+                    LED202_Off(); // 202 �?
+                }
+                fall_led_phase_405 = !fall_led_phase_405;
+            }
+
+            if (buzzer_timer >= 300u)
+            {
+                buzzer_timer = 0u;
+                Buzzer_Toggle();
+            }
+
+            /* 跌倒后循环播放 001 / 002 */
+            switch (fall_audio_state)
+            {
+                case FALL_AUDIO_IDLE:
+                    fall_audio_state = FALL_AUDIO_REQUEST_PLAY1;
+                    break;
+
+                case FALL_AUDIO_REQUEST_PLAY1:
+                    if (MY1680_PlayMusic_SubDir(55u, 1u) != 0u)
+                    {
+                        fall_audio_state = FALL_AUDIO_WAIT_PLAY1;
+                    }
+                    break;
+
+                case FALL_AUDIO_WAIT_PLAY1:
+                    if (MY1680_GetBusyStatus() == 0u)
+                    {
+                        fall_audio_state = FALL_AUDIO_REQUEST_PLAY2;
+                    }
+                    break;
+
+                case FALL_AUDIO_REQUEST_PLAY2:
+                    if (MY1680_PlayMusic_SubDir(55u, 2u) != 0u)
+                    {
+                        fall_audio_state = FALL_AUDIO_WAIT_PLAY2;
+                    }
+                    break;
+
+                case FALL_AUDIO_WAIT_PLAY2:
+                    if (MY1680_GetBusyStatus() == 0u)
+                    {
+                        fall_audio_state = FALL_AUDIO_REQUEST_PLAY1;
+                    }
+                    break;
+            }
+        }
+        else
+        {
+            if (last_fall_state)
+            {
+                LED_Off();      // 405 退出跌倒后关闭
+                LED202_On();    // 202 正常运行常亮
+                Buzzer_Off();   // 415 静音
+                fall_audio_state = FALL_AUDIO_IDLE;
+                last_fall_state = false;
+            }
+
+            if (current_human)
+            {
+                LED202_On();
+            }
+            else
+            {
+                LED202_On(); // 202 正常运行时始终亮
+            }
+        }
+
+        /* ---- D. 温度采集与显示逻辑 (500ms 刷新一�? ---- */
+        if (temp_timer >= 500u)
+        {
+            float current_temp = NTC_GetTemperature();
+            
+            // 格式化为 T:XX.XC，限制总长度不超过8个字�?
+            sprintf(temp_str, "T:%4.1fC", current_temp);
+            
+            // 将温度字符串强制写入第一行的�?8 列，避开左侧�?"LD:OK"
+            OLED_ShowString(1, 8, temp_str);
+            
+            temp_timer = 0u;
+        }
+
+        /* ---- E. 新增�?06端口 MOS开关循环控制逻辑 (�?0s，灭2s) ---- */
+        if (mos_606_is_on)
+        {
+            // 当前处于点亮（高电平）状态，判断是否达到�?10 �?(10000 毫秒)
+            if (mos_606_timer >= 10000u)
+            {
+                R_IOPORT_PinWrite(&g_ioport_ctrl, BSP_IO_PORT_06_PIN_06, BSP_IO_LEVEL_LOW); // 熄灭/关闭MOS
+                mos_606_is_on = false;  // 切换状态为�?
+                mos_606_timer = 0u;     // 清空计时器，重新为“灭”状态计�?
+            }
+        }
+        else
+        {
+            // 当前处于熄灭（低电平）状态，判断是否达到�?2 �?(2000 毫秒)
+            if (mos_606_timer >= 2000u)
+            {
+                R_IOPORT_PinWrite(&g_ioport_ctrl, BSP_IO_PORT_06_PIN_06, BSP_IO_LEVEL_HIGH); // 点亮/导通MOS
+                mos_606_is_on = true;   // 切换状态为�?
+                mos_606_timer = 0u;     // 清空计时器，重新为“亮”状态计�?
+            }
+        }
+    }
+}
+
+void audio_timer_callback(timer_callback_args_t * p_args)
+{
+    (void)p_args;
+}
+
+void R_BSP_WarmStart(bsp_warm_start_event_t event)
+{
+    if (BSP_WARM_START_RESET == event)
+    {
+#if BSP_FEATURE_FLASH_LP_VERSION != 0
+        R_FACI_LP->DFLCTL = 1U;
+#endif
+    }
+    if (BSP_WARM_START_POST_C == event)
+    {
+        R_IOPORT_Open(&g_ioport_ctrl, g_ioport.p_cfg);
+    }
+}
+
+#if BSP_TZ_SECURE_BUILD
+BSP_CMSE_NONSECURE_ENTRY void template_nonsecure_callable(void);
+BSP_CMSE_NONSECURE_ENTRY void template_nonsecure_callable(void) {}
+#endif

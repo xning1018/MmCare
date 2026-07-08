@@ -1,0 +1,16 @@
+配置 pin
+
+IIC 1  
+点ENABLE   对应 p511 p512
+
+在 FSP 配置界面的 Stacks 标签页中，点击 New Stack。
+
+依次选择 Connectivity -> I2C Master (r_iic_master)
+
+Gen
+（Name）：g_i2c_master0。
+channel : 1
+Slave Address（从机地址）： 0x3C
+Address Mode（地址模式）： 7-Bit
+
+callback:  oled_i2c_callback

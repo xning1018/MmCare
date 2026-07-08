@@ -1,0 +1,5 @@
+MMCare
+2026-06-20
+MCU:R7FA6M5BF
+IDE:Keil MDK/FSP
+Src:src/hal_entry.c,API/*.*

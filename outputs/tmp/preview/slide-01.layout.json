@@ -1,0 +1,916 @@
+{
+  "schema": "openai.presentation.layout/v4",
+  "unit": "px",
+  "slide": {
+    "aid": "sl/rlaiqp",
+    "id": "rlaiqp",
+    "slide": 1,
+    "layoutId": "fef25686-a0ac-46b2-94ed-34acb3a0f831",
+    "layoutName": "Title Slide",
+    "layoutType": "title",
+    "masterLayoutId": "b5fd33f5-83b4-44e2-ac0d-9f71eaf05711",
+    "masterLayoutName": "Master",
+    "backgroundColor": "#0F3B5E",
+    "frame": {
+      "left": 0,
+      "top": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "theme": {
+    "colorSchemeName": "ChatGPT",
+    "colors": {
+      "accent1": "#156082",
+      "accent2": "#E97132",
+      "accent3": "#196B24",
+      "accent4": "#0F9ED5",
+      "accent5": "#A02B93",
+      "accent6": "#4EA72E",
+      "bg1": "#FFFFFF",
+      "bg2": "#000000",
+      "tx1": "#1F1F1F",
+      "tx2": "#FFFFFF",
+      "dk1": "#000000",
+      "lt1": "#FFFFFF",
+      "dk2": "#0E2841",
+      "lt2": "#E8E8E8",
+      "hlink": "#467886",
+      "folHlink": "#96607D"
+    },
+    "typefaces": [
+      "+mn-lt"
+    ]
+  },
+  "inheritedLayers": [
+    {
+      "scope": "layout",
+      "id": "fef25686-a0ac-46b2-94ed-34acb3a0f831",
+      "name": "Title Slide",
+      "type": "title",
+      "parentLayoutId": "b5fd33f5-83b4-44e2-ac0d-9f71eaf05711",
+      "elements": []
+    },
+    {
+      "scope": "master",
+      "id": "b5fd33f5-83b4-44e2-ac0d-9f71eaf05711",
+      "name": "Master",
+      "type": "master",
+      "elements": []
+    }
+  ],
+  "elements": [
+    {
+      "order": 1,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/94fu18jq",
+      "id": "1",
+      "bbox": [
+        0,
+        280,
+        1280,
+        6
+      ],
+      "geometry": "rect",
+      "fillColor": "#E85D3A",
+      "lineWidth": 0
+    },
+    {
+      "order": 2,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/2hwfyxob",
+      "id": "2",
+      "bbox": [
+        80,
+        100,
+        600,
+        80
+      ],
+      "geometry": "rect",
+      "text": "MMCare",
+      "textPreview": "MMCare",
+      "resolvedFontSize": 72,
+      "resolvedTextStyle": {
+        "fontSize": 72,
+        "typeface": "+mn-lt",
+        "color": "#FFFFFF",
+        "bold": true,
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "MMCare"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "MMCare",
+          "resolvedTextStyle": {
+            "fontSize": 72,
+            "color": "#FFFFFF",
+            "bold": true
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "MMCare",
+              "fontSize": 72,
+              "color": "#FFFFFF",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 3,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/r2p8nqxs",
+      "id": "3",
+      "bbox": [
+        80,
+        180,
+        700,
+        60
+      ],
+      "geometry": "rect",
+      "text": "智能跌倒检测看护系统",
+      "textPreview": "智能跌倒检测看护系统",
+      "resolvedFontSize": 42,
+      "resolvedTextStyle": {
+        "fontSize": 42,
+        "typeface": "+mn-lt",
+        "color": "#E2E8F0",
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "智能跌倒检测看护系统"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "智能跌倒检测看护系统",
+          "resolvedTextStyle": {
+            "fontSize": 42,
+            "color": "#E2E8F0"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "智能跌倒检测看护系统",
+              "fontSize": 42,
+              "color": "#E2E8F0"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 4,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/gvy90je9",
+      "id": "4",
+      "bbox": [
+        80,
+        310,
+        700,
+        36
+      ],
+      "geometry": "rect",
+      "text": "基于 Renesas RA6M5 (R7FA6M5BF)",
+      "textPreview": "基于 Renesas RA6M5 (R7FA6M5BF)",
+      "resolvedFontSize": 22,
+      "resolvedTextStyle": {
+        "fontSize": 22,
+        "typeface": "+mn-lt",
+        "color": "#E2E8F0",
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "基于 Renesas RA6M5 (R7FA6M5BF)"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "基于 Renesas RA6M5 (R7FA6M5BF)",
+          "resolvedTextStyle": {
+            "fontSize": 22,
+            "color": "#E2E8F0"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "基于 Renesas RA6M5 (R7FA6M5BF)",
+              "fontSize": 22,
+              "color": "#E2E8F0"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 5,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/9gr2p8nq",
+      "id": "5",
+      "bbox": [
+        80,
+        460,
+        400,
+        32
+      ],
+      "geometry": "rect",
+      "text": "项目技术报告",
+      "textPreview": "项目技术报告",
+      "resolvedFontSize": 20,
+      "resolvedTextStyle": {
+        "fontSize": 20,
+        "typeface": "+mn-lt",
+        "color": "#64748B",
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "项目技术报告"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "项目技术报告",
+          "resolvedTextStyle": {
+            "fontSize": 20,
+            "color": "#64748B"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "项目技术报告",
+              "fontSize": 20,
+              "color": "#64748B"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 6,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/2p8nqxs7",
+      "id": "6",
+      "bbox": [
+        80,
+        500,
+        400,
+        28
+      ],
+      "geometry": "rect",
+      "text": "2026 年 6 月",
+      "textPreview": "2026 年 6 月",
+      "resolvedFontSize": 18,
+      "resolvedTextStyle": {
+        "fontSize": 18,
+        "typeface": "+mn-lt",
+        "color": "#64748B",
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "2026 年 6 月"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "2026 年 6 月",
+          "resolvedTextStyle": {
+            "fontSize": 18,
+            "color": "#64748B"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "2026 年 6 月",
+              "fontSize": 18,
+              "color": "#64748B"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 7,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/ra5gbq1o",
+      "id": "7",
+      "bbox": [
+        780,
+        140,
+        400,
+        340
+      ],
+      "geometry": "roundRect",
+      "fillColor": "rgba(255, 255, 255, 0.90196)",
+      "lineColor": "#E2E8F0",
+      "lineWidth": 1
+    },
+    {
+      "order": 8,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/kzupwb2h",
+      "id": "8",
+      "bbox": [
+        800,
+        160,
+        360,
+        30
+      ],
+      "geometry": "rect",
+      "text": "核心能力",
+      "textPreview": "核心能力",
+      "resolvedFontSize": 24,
+      "resolvedTextStyle": {
+        "fontSize": 24,
+        "typeface": "+mn-lt",
+        "color": "#0F3B5E",
+        "bold": true,
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "核心能力"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "核心能力",
+          "resolvedTextStyle": {
+            "fontSize": 24,
+            "color": "#0F3B5E",
+            "bold": true
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "核心能力",
+              "fontSize": 24,
+              "color": "#0F3B5E",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 9,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/9knih4by",
+      "id": "9",
+      "bbox": [
+        800,
+        205,
+        360,
+        22
+      ],
+      "geometry": "rect",
+      "text": "  LD6002C毫米波雷达跌倒检测",
+      "textPreview": "LD6002C毫米波雷达跌倒检测",
+      "resolvedFontSize": 14,
+      "resolvedTextStyle": {
+        "fontSize": 14,
+        "typeface": "+mn-lt",
+        "color": "#334155",
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "  LD6002C毫米波雷达跌倒检测"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "  LD6002C毫米波雷达跌倒检测",
+          "resolvedTextStyle": {
+            "fontSize": 14,
+            "color": "#334155"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "  LD6002C毫米波雷达跌倒检测",
+              "fontSize": 14,
+              "color": "#334155"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 10,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/p8nqxs72",
+      "id": "10",
+      "bbox": [
+        800,
+        231,
+        360,
+        22
+      ],
+      "geometry": "rect",
+      "text": "  OLED实时状态显示",
+      "textPreview": "OLED实时状态显示",
+      "resolvedFontSize": 14,
+      "resolvedTextStyle": {
+        "fontSize": 14,
+        "typeface": "+mn-lt",
+        "color": "#334155",
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "  OLED实时状态显示"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "  OLED实时状态显示",
+          "resolvedTextStyle": {
+            "fontSize": 14,
+            "color": "#334155"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "  OLED实时状态显示",
+              "fontSize": 14,
+              "color": "#334155"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 11,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/0nuxc3yl",
+      "id": "11",
+      "bbox": [
+        800,
+        257,
+        360,
+        22
+      ],
+      "geometry": "rect",
+      "text": "  MY1680语音播报报警",
+      "textPreview": "MY1680语音播报报警",
+      "resolvedFontSize": 14,
+      "resolvedTextStyle": {
+        "fontSize": 14,
+        "typeface": "+mn-lt",
+        "color": "#334155",
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "  MY1680语音播报报警"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "  MY1680语音播报报警",
+          "resolvedTextStyle": {
+            "fontSize": 14,
+            "color": "#334155"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "  MY1680语音播报报警",
+              "fontSize": 14,
+              "color": "#334155"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 12,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/72x4nap4",
+      "id": "12",
+      "bbox": [
+        800,
+        283,
+        360,
+        22
+      ],
+      "geometry": "rect",
+      "text": "  ML307R 4G远程云上报",
+      "textPreview": "ML307R 4G远程云上报",
+      "resolvedFontSize": 14,
+      "resolvedTextStyle": {
+        "fontSize": 14,
+        "typeface": "+mn-lt",
+        "color": "#334155",
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "  ML307R 4G远程云上报"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "  ML307R 4G远程云上报",
+          "resolvedTextStyle": {
+            "fontSize": 14,
+            "color": "#334155"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "  ML307R 4G远程云上报",
+              "fontSize": 14,
+              "color": "#334155"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 13,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/ih4byhgn",
+      "id": "13",
+      "bbox": [
+        800,
+        309,
+        360,
+        22
+      ],
+      "geometry": "rect",
+      "text": "  NTC温度实时监测",
+      "textPreview": "NTC温度实时监测",
+      "resolvedFontSize": 14,
+      "resolvedTextStyle": {
+        "fontSize": 14,
+        "typeface": "+mn-lt",
+        "color": "#334155",
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "  NTC温度实时监测"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "  NTC温度实时监测",
+          "resolvedTextStyle": {
+            "fontSize": 14,
+            "color": "#334155"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "  NTC温度实时监测",
+              "fontSize": 14,
+              "color": "#334155"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 14,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/pkzupwb2",
+      "id": "14",
+      "bbox": [
+        800,
+        335,
+        360,
+        22
+      ],
+      "geometry": "rect",
+      "text": "  声光一体化报警",
+      "textPreview": "声光一体化报警",
+      "resolvedFontSize": 14,
+      "resolvedTextStyle": {
+        "fontSize": 14,
+        "typeface": "+mn-lt",
+        "color": "#334155",
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "  声光一体化报警"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "  声光一体化报警",
+          "resolvedTextStyle": {
+            "fontSize": 14,
+            "color": "#334155"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "  声光一体化报警",
+              "fontSize": 14,
+              "color": "#334155"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 15,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/0z61032l",
+      "id": "15",
+      "bbox": [
+        800,
+        361,
+        360,
+        22
+      ],
+      "geometry": "rect",
+      "text": "  200MHz/1MB Flash/512KB RAM",
+      "textPreview": "200MHz/1MB Flash/512KB RAM",
+      "resolvedFontSize": 14,
+      "resolvedTextStyle": {
+        "fontSize": 14,
+        "typeface": "+mn-lt",
+        "color": "#334155",
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "  200MHz/1MB Flash/512KB RAM"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "  200MHz/1MB Flash/512KB RAM",
+          "resolvedTextStyle": {
+            "fontSize": 14,
+            "color": "#334155"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "  200MHz/1MB Flash/512KB RAM",
+              "fontSize": 14,
+              "color": "#334155"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 16,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/7ed8bat4",
+      "id": "16",
+      "bbox": [
+        800,
+        387,
+        360,
+        22
+      ],
+      "geometry": "rect",
+      "text": "  Keil MDK/FSP驱动框架",
+      "textPreview": "Keil MDK/FSP驱动框架",
+      "resolvedFontSize": 14,
+      "resolvedTextStyle": {
+        "fontSize": 14,
+        "typeface": "+mn-lt",
+        "color": "#334155",
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "  Keil MDK/FSP驱动框架"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "  Keil MDK/FSP驱动框架",
+          "resolvedTextStyle": {
+            "fontSize": 14,
+            "color": "#334155"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "  Keil MDK/FSP驱动框架",
+              "fontSize": 14,
+              "color": "#334155"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    }
+  ],
+  "composeRuns": []
+}

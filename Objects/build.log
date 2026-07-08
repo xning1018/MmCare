@@ -1,0 +1,9 @@
+*** Using Compiler 'V6.24', folder: 'D:\MDK536\Keil\ARM\ARMCLANG\Bin'
+Build target 'Target 1'
+compiling hal_entry.c...
+linking...
+Program Size: Code=9178 RO-data=3078 RW-data=12 ZI-data=2640  
+FromELF: creating hex file...
+After Build - User command #1: cmd /c "start "Renesas" /w cmd /c ""C:/Users/ls/AppData/Local/Arm/Packs/Renesas/RA_DFP/6.4.0/launcher\rasc_launcher.bat" "C:\Users\ls\RASmartConfigurator\Mmcare\rasc_version.txt" -nosplash --launcher.suppressErrors --gensmartbundle --compiler ARMv6 "C:\Users\ls\RASmartConfigurator\Mmcare\configuration.xml" "C:\Users\ls\RASmartConfigurator\Mmcare\Objects\Mmcare.axf" 2> "%TEMP%\rasc_stderr.out"""
+".\Objects\Mmcare.axf" - 0 Error(s), 0 Warning(s).
+Build Time Elapsed:  00:00:33

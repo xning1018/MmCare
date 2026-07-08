@@ -1,0 +1,1650 @@
+{
+  "schema": "openai.presentation.layout/v4",
+  "unit": "px",
+  "slide": {
+    "aid": "sl/5rjdzt",
+    "id": "5rjdzt",
+    "slide": 10,
+    "layoutId": "fef25686-a0ac-46b2-94ed-34acb3a0f831",
+    "layoutName": "Title Slide",
+    "layoutType": "title",
+    "masterLayoutId": "b5fd33f5-83b4-44e2-ac0d-9f71eaf05711",
+    "masterLayoutName": "Master",
+    "backgroundColor": "#F8FAFC",
+    "frame": {
+      "left": 0,
+      "top": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "theme": {
+    "colorSchemeName": "ChatGPT",
+    "colors": {
+      "accent1": "#156082",
+      "accent2": "#E97132",
+      "accent3": "#196B24",
+      "accent4": "#0F9ED5",
+      "accent5": "#A02B93",
+      "accent6": "#4EA72E",
+      "bg1": "#FFFFFF",
+      "bg2": "#000000",
+      "tx1": "#1F1F1F",
+      "tx2": "#FFFFFF",
+      "dk1": "#000000",
+      "lt1": "#FFFFFF",
+      "dk2": "#0E2841",
+      "lt2": "#E8E8E8",
+      "hlink": "#467886",
+      "folHlink": "#96607D"
+    },
+    "typefaces": [
+      "+mn-lt"
+    ]
+  },
+  "inheritedLayers": [
+    {
+      "scope": "layout",
+      "id": "fef25686-a0ac-46b2-94ed-34acb3a0f831",
+      "name": "Title Slide",
+      "type": "title",
+      "parentLayoutId": "b5fd33f5-83b4-44e2-ac0d-9f71eaf05711",
+      "elements": []
+    },
+    {
+      "scope": "master",
+      "id": "b5fd33f5-83b4-44e2-ac0d-9f71eaf05711",
+      "name": "Master",
+      "type": "master",
+      "elements": []
+    }
+  ],
+  "elements": [
+    {
+      "order": 1,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/re1w7mp0",
+      "id": "1",
+      "bbox": [
+        0,
+        0,
+        1280,
+        6
+      ],
+      "geometry": "rect",
+      "fillColor": "#0F3B5E",
+      "lineWidth": 0
+    },
+    {
+      "order": 2,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/kzupwb2h",
+      "id": "2",
+      "bbox": [
+        72,
+        28,
+        800,
+        40
+      ],
+      "geometry": "rect",
+      "text": "软件架构",
+      "textPreview": "软件架构",
+      "resolvedFontSize": 32,
+      "resolvedTextStyle": {
+        "fontSize": 32,
+        "typeface": "+mn-lt",
+        "color": "#0F3B5E",
+        "bold": true,
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "软件架构"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "软件架构",
+          "resolvedTextStyle": {
+            "fontSize": 32,
+            "color": "#0F3B5E",
+            "bold": true
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "软件架构",
+              "fontSize": 32,
+              "color": "#0F3B5E",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 3,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/9knih4by",
+      "id": "3",
+      "bbox": [
+        72,
+        68,
+        60,
+        4
+      ],
+      "geometry": "rect",
+      "fillColor": "#E85D3A",
+      "lineWidth": 0
+    },
+    {
+      "order": 4,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/25kb6xkf",
+      "id": "4",
+      "bbox": [
+        72,
+        96,
+        350,
+        430
+      ],
+      "geometry": "roundRect",
+      "fillColor": "#FFFFFF",
+      "lineColor": "#E2E8F0",
+      "lineWidth": 1
+    },
+    {
+      "order": 5,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/rqd4vmtw",
+      "id": "5",
+      "bbox": [
+        90,
+        110,
+        310,
+        26
+      ],
+      "geometry": "rect",
+      "text": "初始化",
+      "textPreview": "初始化",
+      "resolvedFontSize": 18,
+      "resolvedTextStyle": {
+        "fontSize": 18,
+        "typeface": "+mn-lt",
+        "color": "#0F3B5E",
+        "bold": true,
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "初始化"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "初始化",
+          "resolvedTextStyle": {
+            "fontSize": 18,
+            "color": "#0F3B5E",
+            "bold": true
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "初始化",
+              "fontSize": 18,
+              "color": "#0F3B5E",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 6,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/kb6xkf6d",
+      "id": "6",
+      "bbox": [
+        90,
+        146,
+        310,
+        22
+      ],
+      "geometry": "rect",
+      "text": "  LED/Buzzer/OLED",
+      "textPreview": "LED/Buzzer/OLED",
+      "resolvedFontSize": 12,
+      "resolvedTextStyle": {
+        "fontSize": 12,
+        "typeface": "+mn-lt",
+        "color": "#334155",
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "  LED/Buzzer/OLED"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "  LED/Buzzer/OLED",
+          "resolvedTextStyle": {
+            "fontSize": 12,
+            "color": "#334155"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "  LED/Buzzer/OLED",
+              "fontSize": 12,
+              "color": "#334155"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 7,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/9w3m94fu",
+      "id": "7",
+      "bbox": [
+        90,
+        170,
+        310,
+        22
+      ],
+      "geometry": "rect",
+      "text": "  MY1680延时350ms",
+      "textPreview": "MY1680延时350ms",
+      "resolvedFontSize": 12,
+      "resolvedTextStyle": {
+        "fontSize": 12,
+        "typeface": "+mn-lt",
+        "color": "#334155",
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "  MY1680延时350ms"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "  MY1680延时350ms",
+          "resolvedTextStyle": {
+            "fontSize": 12,
+            "color": "#334155"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "  MY1680延时350ms",
+              "fontSize": 12,
+              "color": "#334155"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 8,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/2hwfyxob",
+      "id": "8",
+      "bbox": [
+        90,
+        194,
+        310,
+        22
+      ],
+      "geometry": "rect",
+      "text": "  Radar UART4",
+      "textPreview": "Radar UART4",
+      "resolvedFontSize": 12,
+      "resolvedTextStyle": {
+        "fontSize": 12,
+        "typeface": "+mn-lt",
+        "color": "#334155",
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "  Radar UART4"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "  Radar UART4",
+          "resolvedTextStyle": {
+            "fontSize": 12,
+            "color": "#334155"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "  Radar UART4",
+              "fontSize": 12,
+              "color": "#334155"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 9,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/r2p8nqxs",
+      "id": "9",
+      "bbox": [
+        90,
+        218,
+        310,
+        22
+      ],
+      "geometry": "rect",
+      "text": "  NTC ADC",
+      "textPreview": "NTC ADC",
+      "resolvedFontSize": 12,
+      "resolvedTextStyle": {
+        "fontSize": 12,
+        "typeface": "+mn-lt",
+        "color": "#334155",
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "  NTC ADC"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "  NTC ADC",
+          "resolvedTextStyle": {
+            "fontSize": 12,
+            "color": "#334155"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "  NTC ADC",
+              "fontSize": 12,
+              "color": "#334155"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 10,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/7ed8bat4",
+      "id": "10",
+      "bbox": [
+        90,
+        242,
+        310,
+        22
+      ],
+      "geometry": "rect",
+      "text": "  ML307R UART9",
+      "textPreview": "ML307R UART9",
+      "resolvedFontSize": 12,
+      "resolvedTextStyle": {
+        "fontSize": 12,
+        "typeface": "+mn-lt",
+        "color": "#334155",
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "  ML307R UART9"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "  ML307R UART9",
+          "resolvedTextStyle": {
+            "fontSize": 12,
+            "color": "#334155"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "  ML307R UART9",
+              "fontSize": 12,
+              "color": "#334155"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 11,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/itgfmlkj",
+      "id": "11",
+      "bbox": [
+        90,
+        266,
+        310,
+        22
+      ],
+      "geometry": "rect",
+      "text": "  开机蜂鸣+语音",
+      "textPreview": "开机蜂鸣+语音",
+      "resolvedFontSize": 12,
+      "resolvedTextStyle": {
+        "fontSize": 12,
+        "typeface": "+mn-lt",
+        "color": "#334155",
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "  开机蜂鸣+语音"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "  开机蜂鸣+语音",
+          "resolvedTextStyle": {
+            "fontSize": 12,
+            "color": "#334155"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "  开机蜂鸣+语音",
+              "fontSize": 12,
+              "color": "#334155"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 12,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/pkzupwb2",
+      "id": "12",
+      "bbox": [
+        90,
+        290,
+        310,
+        22
+      ],
+      "geometry": "rect",
+      "text": "  4G联网非阻塞",
+      "textPreview": "4G联网非阻塞",
+      "resolvedFontSize": 12,
+      "resolvedTextStyle": {
+        "fontSize": 12,
+        "typeface": "+mn-lt",
+        "color": "#334155",
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "  4G联网非阻塞"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "  4G联网非阻塞",
+          "resolvedTextStyle": {
+            "fontSize": 12,
+            "color": "#334155"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "  4G联网非阻塞",
+              "fontSize": 12,
+              "color": "#334155"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 13,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/0z61032l",
+      "id": "13",
+      "bbox": [
+        460,
+        96,
+        370,
+        430
+      ],
+      "geometry": "roundRect",
+      "fillColor": "#FFFFFF",
+      "lineColor": "#E2E8F0",
+      "lineWidth": 1
+    },
+    {
+      "order": 14,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/72x4nap4",
+      "id": "14",
+      "bbox": [
+        478,
+        110,
+        330,
+        26
+      ],
+      "geometry": "rect",
+      "text": "主循环10ms Tick",
+      "textPreview": "主循环10ms Tick",
+      "resolvedFontSize": 18,
+      "resolvedTextStyle": {
+        "fontSize": 18,
+        "typeface": "+mn-lt",
+        "color": "#0F3B5E",
+        "bold": true,
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "主循环10ms Tick"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "主循环10ms Tick",
+          "resolvedTextStyle": {
+            "fontSize": 18,
+            "color": "#0F3B5E",
+            "bold": true
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "主循环10ms Tick",
+              "fontSize": 18,
+              "color": "#0F3B5E",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 15,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/ih4byhgn",
+      "id": "15",
+      "bbox": [
+        478,
+        146,
+        330,
+        20
+      ],
+      "geometry": "rect",
+      "text": "A雷达解析OLED刷新",
+      "textPreview": "A雷达解析OLED刷新",
+      "resolvedFontSize": 12,
+      "resolvedTextStyle": {
+        "fontSize": 12,
+        "typeface": "+mn-lt",
+        "color": "#334155",
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "A雷达解析OLED刷新"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "A雷达解析OLED刷新",
+          "resolvedTextStyle": {
+            "fontSize": 12,
+            "color": "#334155"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "A雷达解析OLED刷新",
+              "fontSize": 12,
+              "color": "#334155"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 16,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/p8nqxs72",
+      "id": "16",
+      "bbox": [
+        478,
+        168,
+        330,
+        20
+      ],
+      "geometry": "rect",
+      "text": "B人员检测604LED",
+      "textPreview": "B人员检测604LED",
+      "resolvedFontSize": 12,
+      "resolvedTextStyle": {
+        "fontSize": 12,
+        "typeface": "+mn-lt",
+        "color": "#334155",
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "B人员检测604LED"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "B人员检测604LED",
+          "resolvedTextStyle": {
+            "fontSize": 12,
+            "color": "#334155"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "B人员检测604LED",
+              "fontSize": 12,
+              "color": "#334155"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 17,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/0nuxc3yl",
+      "id": "17",
+      "bbox": [
+        478,
+        190,
+        330,
+        20
+      ],
+      "geometry": "rect",
+      "text": "C跌倒声光报警联动",
+      "textPreview": "C跌倒声光报警联动",
+      "resolvedFontSize": 12,
+      "resolvedTextStyle": {
+        "fontSize": 12,
+        "typeface": "+mn-lt",
+        "color": "#1A6B8A",
+        "bold": true,
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "C跌倒声光报警联动"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "C跌倒声光报警联动",
+          "resolvedTextStyle": {
+            "fontSize": 12,
+            "color": "#1A6B8A",
+            "bold": true
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "C跌倒声光报警联动",
+              "fontSize": 12,
+              "color": "#1A6B8A",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 18,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/7y1kre1w",
+      "id": "18",
+      "bbox": [
+        478,
+        212,
+        330,
+        20
+      ],
+      "geometry": "rect",
+      "text": "D温度500ms采集",
+      "textPreview": "D温度500ms采集",
+      "resolvedFontSize": 12,
+      "resolvedTextStyle": {
+        "fontSize": 12,
+        "typeface": "+mn-lt",
+        "color": "#1A6B8A",
+        "bold": true,
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "D温度500ms采集"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "D温度500ms采集",
+          "resolvedTextStyle": {
+            "fontSize": 12,
+            "color": "#1A6B8A",
+            "bold": true
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "D温度500ms采集",
+              "fontSize": 12,
+              "color": "#1A6B8A",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 19,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/ed8v6psf",
+      "id": "19",
+      "bbox": [
+        478,
+        234,
+        330,
+        20
+      ],
+      "geometry": "rect",
+      "text": "E 4G云上报",
+      "textPreview": "E 4G云上报",
+      "resolvedFontSize": 12,
+      "resolvedTextStyle": {
+        "fontSize": 12,
+        "typeface": "+mn-lt",
+        "color": "#1A6B8A",
+        "bold": true,
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "E 4G云上报"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "E 4G云上报",
+          "resolvedTextStyle": {
+            "fontSize": 12,
+            "color": "#1A6B8A",
+            "bold": true
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "E 4G云上报",
+              "fontSize": 12,
+              "color": "#1A6B8A",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 20,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/mlkjm1cf",
+      "id": "20",
+      "bbox": [
+        478,
+        256,
+        330,
+        20
+      ],
+      "geometry": "rect",
+      "text": "F MOS 10s/2s",
+      "textPreview": "F MOS 10s/2s",
+      "resolvedFontSize": 12,
+      "resolvedTextStyle": {
+        "fontSize": 12,
+        "typeface": "+mn-lt",
+        "color": "#1A6B8A",
+        "bold": true,
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "F MOS 10s/2s"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "F MOS 10s/2s",
+          "resolvedTextStyle": {
+            "fontSize": 12,
+            "color": "#1A6B8A",
+            "bold": true
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "F MOS 10s/2s",
+              "fontSize": 12,
+              "color": "#1A6B8A",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 21,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/f6dcbulw",
+      "id": "21",
+      "bbox": [
+        868,
+        96,
+        340,
+        430
+      ],
+      "geometry": "roundRect",
+      "fillColor": "#FFFFFF",
+      "lineColor": "#E2E8F0",
+      "lineWidth": 1
+    },
+    {
+      "order": 22,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/4r65wjud",
+      "id": "22",
+      "bbox": [
+        886,
+        110,
+        300,
+        26
+      ],
+      "geometry": "rect",
+      "text": "模块分层",
+      "textPreview": "模块分层",
+      "resolvedFontSize": 18,
+      "resolvedTextStyle": {
+        "fontSize": 18,
+        "typeface": "+mn-lt",
+        "color": "#0F3B5E",
+        "bold": true,
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "模块分层"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "模块分层",
+          "resolvedTextStyle": {
+            "fontSize": 18,
+            "color": "#0F3B5E",
+            "bold": true
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "模块分层",
+              "fontSize": 18,
+              "color": "#0F3B5E",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 23,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/xc3ylc7u",
+      "id": "23",
+      "bbox": [
+        886,
+        146,
+        70,
+        20
+      ],
+      "geometry": "rect",
+      "text": "应用",
+      "textPreview": "应用",
+      "resolvedFontSize": 12,
+      "resolvedTextStyle": {
+        "fontSize": 12,
+        "typeface": "+mn-lt",
+        "color": "#0F3B5E",
+        "bold": true,
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "应用"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "应用",
+          "resolvedTextStyle": {
+            "fontSize": 12,
+            "color": "#0F3B5E",
+            "bold": true
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "应用",
+              "fontSize": 12,
+              "color": "#0F3B5E",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 24,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/mtwra5gb",
+      "id": "24",
+      "bbox": [
+        958,
+        146,
+        230,
+        80
+      ],
+      "geometry": "rect",
+      "text": "hal_entry/fall_alarm/radar_display",
+      "textPreview": "hal_entry/fall_alarm/radar_display",
+      "resolvedFontSize": 12,
+      "resolvedTextStyle": {
+        "fontSize": 12,
+        "typeface": "+mn-lt",
+        "color": "#334155",
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "hal_entry/fall_alarm/radar_display"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "hal_entry/fall_alarm/radar_display",
+          "lineSpacingPercent": 130000,
+          "resolvedTextStyle": {
+            "fontSize": 12,
+            "color": "#334155",
+            "lineSpacing": 1.3
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "hal_entry/fall_alarm/radar_display",
+              "fontSize": 12,
+              "color": "#334155",
+              "lineSpacing": 1.3
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 25,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/fepkzupw",
+      "id": "25",
+      "bbox": [
+        886,
+        236,
+        70,
+        20
+      ],
+      "geometry": "rect",
+      "text": "API",
+      "textPreview": "API",
+      "resolvedFontSize": 12,
+      "resolvedTextStyle": {
+        "fontSize": 12,
+        "typeface": "+mn-lt",
+        "color": "#0F3B5E",
+        "bold": true,
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "API"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "API",
+          "resolvedTextStyle": {
+            "fontSize": 12,
+            "color": "#0F3B5E",
+            "bold": true
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "API",
+              "fontSize": 12,
+              "color": "#0F3B5E",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 26,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/4zidonyd",
+      "id": "26",
+      "bbox": [
+        958,
+        236,
+        230,
+        80
+      ],
+      "geometry": "rect",
+      "text": "led/buzzer/oled/my1680/ml307r/ntc_temp/radar_uart",
+      "textPreview": "led/buzzer/oled/my1680/ml307r/ntc_temp/radar_uart",
+      "resolvedFontSize": 12,
+      "resolvedTextStyle": {
+        "fontSize": 12,
+        "typeface": "+mn-lt",
+        "color": "#334155",
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "led/buzzer/oled/my1680/ml307r/ntc_tem"
+          },
+          {
+            "index": 2,
+            "text": "p/radar_uart"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "led/buzzer/oled/my1680/ml307r/ntc_temp/radar_uart",
+          "lineSpacingPercent": 130000,
+          "resolvedTextStyle": {
+            "fontSize": 12,
+            "color": "#334155",
+            "lineSpacing": 1.3
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "led/buzzer/oled/my1680/ml307r/ntc_temp/radar_uart",
+              "fontSize": 12,
+              "color": "#334155",
+              "lineSpacing": 1.3
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 27,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/xkf6dcbu",
+      "id": "27",
+      "bbox": [
+        886,
+        326,
+        70,
+        20
+      ],
+      "geometry": "rect",
+      "text": "驱动",
+      "textPreview": "驱动",
+      "resolvedFontSize": 12,
+      "resolvedTextStyle": {
+        "fontSize": 12,
+        "typeface": "+mn-lt",
+        "color": "#0F3B5E",
+        "bold": true,
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "驱动"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "驱动",
+          "resolvedTextStyle": {
+            "fontSize": 12,
+            "color": "#0F3B5E",
+            "bold": true
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "驱动",
+              "fontSize": 12,
+              "color": "#0F3B5E",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 28,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/qxs72x4n",
+      "id": "28",
+      "bbox": [
+        958,
+        326,
+        230,
+        80
+      ],
+      "geometry": "rect",
+      "text": "FSP HAL",
+      "textPreview": "FSP HAL",
+      "resolvedFontSize": 12,
+      "resolvedTextStyle": {
+        "fontSize": 12,
+        "typeface": "+mn-lt",
+        "color": "#334155",
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "FSP HAL"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "FSP HAL",
+          "lineSpacingPercent": 130000,
+          "resolvedTextStyle": {
+            "fontSize": 12,
+            "color": "#334155",
+            "lineSpacing": 1.3
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "FSP HAL",
+              "fontSize": 12,
+              "color": "#334155",
+              "lineSpacing": 1.3
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 29,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/fil0rqd4",
+      "id": "29",
+      "bbox": [
+        886,
+        416,
+        70,
+        20
+      ],
+      "geometry": "rect",
+      "text": "硬件",
+      "textPreview": "硬件",
+      "resolvedFontSize": 12,
+      "resolvedTextStyle": {
+        "fontSize": 12,
+        "typeface": "+mn-lt",
+        "color": "#0F3B5E",
+        "bold": true,
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "硬件"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "硬件",
+          "resolvedTextStyle": {
+            "fontSize": 12,
+            "color": "#0F3B5E",
+            "bold": true
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "硬件",
+              "fontSize": 12,
+              "color": "#0F3B5E",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 30,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/1orytsvu",
+      "id": "30",
+      "bbox": [
+        958,
+        416,
+        230,
+        80
+      ],
+      "geometry": "rect",
+      "text": "MCU+外设",
+      "textPreview": "MCU+外设",
+      "resolvedFontSize": 12,
+      "resolvedTextStyle": {
+        "fontSize": 12,
+        "typeface": "+mn-lt",
+        "color": "#334155",
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "MCU+外设"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "MCU+外设",
+          "lineSpacingPercent": 130000,
+          "resolvedTextStyle": {
+            "fontSize": 12,
+            "color": "#334155",
+            "lineSpacing": 1.3
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "MCU+外设",
+              "fontSize": 12,
+              "color": "#334155",
+              "lineSpacing": 1.3
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    }
+  ],
+  "composeRuns": []
+}

@@ -1,0 +1,952 @@
+{
+  "schema": "openai.presentation.layout/v4",
+  "unit": "px",
+  "slide": {
+    "aid": "sl/b8tmz1",
+    "id": "b8tmz1",
+    "slide": 7,
+    "layoutId": "fef25686-a0ac-46b2-94ed-34acb3a0f831",
+    "layoutName": "Title Slide",
+    "layoutType": "title",
+    "masterLayoutId": "b5fd33f5-83b4-44e2-ac0d-9f71eaf05711",
+    "masterLayoutName": "Master",
+    "backgroundColor": "#F8FAFC",
+    "frame": {
+      "left": 0,
+      "top": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "theme": {
+    "colorSchemeName": "ChatGPT",
+    "colors": {
+      "accent1": "#156082",
+      "accent2": "#E97132",
+      "accent3": "#196B24",
+      "accent4": "#0F9ED5",
+      "accent5": "#A02B93",
+      "accent6": "#4EA72E",
+      "bg1": "#FFFFFF",
+      "bg2": "#000000",
+      "tx1": "#1F1F1F",
+      "tx2": "#FFFFFF",
+      "dk1": "#000000",
+      "lt1": "#FFFFFF",
+      "dk2": "#0E2841",
+      "lt2": "#E8E8E8",
+      "hlink": "#467886",
+      "folHlink": "#96607D"
+    },
+    "typefaces": [
+      "+mn-lt"
+    ]
+  },
+  "inheritedLayers": [
+    {
+      "scope": "layout",
+      "id": "fef25686-a0ac-46b2-94ed-34acb3a0f831",
+      "name": "Title Slide",
+      "type": "title",
+      "parentLayoutId": "b5fd33f5-83b4-44e2-ac0d-9f71eaf05711",
+      "elements": []
+    },
+    {
+      "scope": "master",
+      "id": "b5fd33f5-83b4-44e2-ac0d-9f71eaf05711",
+      "name": "Master",
+      "type": "master",
+      "elements": []
+    }
+  ],
+  "elements": [
+    {
+      "order": 1,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/itgfmlkj",
+      "id": "1",
+      "bbox": [
+        0,
+        0,
+        1280,
+        6
+      ],
+      "geometry": "rect",
+      "fillColor": "#0F3B5E",
+      "lineWidth": 0
+    },
+    {
+      "order": 2,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/pkzupwb2",
+      "id": "2",
+      "bbox": [
+        72,
+        28,
+        800,
+        40
+      ],
+      "geometry": "rect",
+      "text": "语音播报和4G云通信",
+      "textPreview": "语音播报和4G云通信",
+      "resolvedFontSize": 32,
+      "resolvedTextStyle": {
+        "fontSize": 32,
+        "typeface": "+mn-lt",
+        "color": "#0F3B5E",
+        "bold": true,
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "语音播报和4G云通信"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "语音播报和4G云通信",
+          "resolvedTextStyle": {
+            "fontSize": 32,
+            "color": "#0F3B5E",
+            "bold": true
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "语音播报和4G云通信",
+              "fontSize": 32,
+              "color": "#0F3B5E",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 3,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/0z61032l",
+      "id": "3",
+      "bbox": [
+        72,
+        68,
+        60,
+        4
+      ],
+      "geometry": "rect",
+      "fillColor": "#E85D3A",
+      "lineWidth": 0
+    },
+    {
+      "order": 4,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/72x4nap4",
+      "id": "4",
+      "bbox": [
+        72,
+        96,
+        540,
+        430
+      ],
+      "geometry": "roundRect",
+      "fillColor": "#FFFFFF",
+      "lineColor": "#E2E8F0",
+      "lineWidth": 1
+    },
+    {
+      "order": 5,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/ih4byhgn",
+      "id": "5",
+      "bbox": [
+        90,
+        110,
+        500,
+        26
+      ],
+      "geometry": "rect",
+      "text": "MY1680语音",
+      "textPreview": "MY1680语音",
+      "resolvedFontSize": 20,
+      "resolvedTextStyle": {
+        "fontSize": 20,
+        "typeface": "+mn-lt",
+        "color": "#0F3B5E",
+        "bold": true,
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "MY1680语音"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "MY1680语音",
+          "resolvedTextStyle": {
+            "fontSize": 20,
+            "color": "#0F3B5E",
+            "bold": true
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "MY1680语音",
+              "fontSize": 20,
+              "color": "#0F3B5E",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 6,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/p8nqxs72",
+      "id": "6",
+      "bbox": [
+        90,
+        146,
+        500,
+        22
+      ],
+      "geometry": "rect",
+      "text": "  UART SCI2 9600 8N1",
+      "textPreview": "UART SCI2 9600 8N1",
+      "resolvedFontSize": 13,
+      "resolvedTextStyle": {
+        "fontSize": 13,
+        "typeface": "+mn-lt",
+        "color": "#334155",
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "  UART SCI2 9600 8N1"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "  UART SCI2 9600 8N1",
+          "resolvedTextStyle": {
+            "fontSize": 13,
+            "color": "#334155"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "  UART SCI2 9600 8N1",
+              "fontSize": 13,
+              "color": "#334155"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 7,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/0nuxc3yl",
+      "id": "7",
+      "bbox": [
+        90,
+        170,
+        500,
+        22
+      ],
+      "geometry": "rect",
+      "text": "  BUSY引脚 P413 延时350ms",
+      "textPreview": "BUSY引脚 P413 延时350ms",
+      "resolvedFontSize": 13,
+      "resolvedTextStyle": {
+        "fontSize": 13,
+        "typeface": "+mn-lt",
+        "color": "#334155",
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "  BUSY引脚 P413 延时350ms"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "  BUSY引脚 P413 延时350ms",
+          "resolvedTextStyle": {
+            "fontSize": 13,
+            "color": "#334155"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "  BUSY引脚 P413 延时350ms",
+              "fontSize": 13,
+              "color": "#334155"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 8,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/7y1kre1w",
+      "id": "8",
+      "bbox": [
+        90,
+        194,
+        500,
+        22
+      ],
+      "geometry": "rect",
+      "text": "  SD卡存储 目录选曲",
+      "textPreview": "SD卡存储 目录选曲",
+      "resolvedFontSize": 13,
+      "resolvedTextStyle": {
+        "fontSize": 13,
+        "typeface": "+mn-lt",
+        "color": "#334155",
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "  SD卡存储 目录选曲"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "  SD卡存储 目录选曲",
+          "resolvedTextStyle": {
+            "fontSize": 13,
+            "color": "#334155"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "  SD卡存储 目录选曲",
+              "fontSize": 13,
+              "color": "#334155"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 9,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/ed8v6psf",
+      "id": "9",
+      "bbox": [
+        90,
+        218,
+        500,
+        22
+      ],
+      "geometry": "rect",
+      "text": "  跌倒循环55/001和55/002",
+      "textPreview": "跌倒循环55/001和55/002",
+      "resolvedFontSize": 13,
+      "resolvedTextStyle": {
+        "fontSize": 13,
+        "typeface": "+mn-lt",
+        "color": "#334155",
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "  跌倒循环55/001和55/002"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "  跌倒循环55/001和55/002",
+          "resolvedTextStyle": {
+            "fontSize": 13,
+            "color": "#334155"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "  跌倒循环55/001和55/002",
+              "fontSize": 13,
+              "color": "#334155"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 10,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/8v6psfil",
+      "id": "10",
+      "bbox": [
+        90,
+        242,
+        500,
+        22
+      ],
+      "geometry": "rect",
+      "text": "  查询BusyStatus状态机",
+      "textPreview": "查询BusyStatus状态机",
+      "resolvedFontSize": 13,
+      "resolvedTextStyle": {
+        "fontSize": 13,
+        "typeface": "+mn-lt",
+        "color": "#334155",
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "  查询BusyStatus状态机"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "  查询BusyStatus状态机",
+          "resolvedTextStyle": {
+            "fontSize": 13,
+            "color": "#334155"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "  查询BusyStatus状态机",
+              "fontSize": 13,
+              "color": "#334155"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 11,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/xczed8v6",
+      "id": "11",
+      "bbox": [
+        90,
+        280,
+        500,
+        40
+      ],
+      "geometry": "rect",
+      "text": "状态机:IDLE->REQ1->WAIT1->REQ2->WAIT2循环",
+      "textPreview": "状态机:IDLE->REQ1->WAIT1->REQ2->WAIT2循环",
+      "resolvedFontSize": 12,
+      "resolvedTextStyle": {
+        "fontSize": 12,
+        "typeface": "+mn-lt",
+        "color": "#1A6B8A",
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "状态机:IDLE->REQ1->WAIT1->REQ2->WAIT2循环"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "状态机:IDLE->REQ1->WAIT1->REQ2->WAIT2循环",
+          "resolvedTextStyle": {
+            "fontSize": 12,
+            "color": "#1A6B8A"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "状态机:IDLE->REQ1->WAIT1->REQ2->WAIT2循环",
+              "fontSize": 12,
+              "color": "#1A6B8A"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 12,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/qpg3ex0n",
+      "id": "12",
+      "bbox": [
+        660,
+        96,
+        540,
+        430
+      ],
+      "geometry": "roundRect",
+      "fillColor": "#FFFFFF",
+      "lineColor": "#E2E8F0",
+      "lineWidth": 1
+    },
+    {
+      "order": 13,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/fa9w3m94",
+      "id": "13",
+      "bbox": [
+        678,
+        110,
+        500,
+        26
+      ],
+      "geometry": "rect",
+      "text": "ML307R 4G",
+      "textPreview": "ML307R 4G",
+      "resolvedFontSize": 20,
+      "resolvedTextStyle": {
+        "fontSize": 20,
+        "typeface": "+mn-lt",
+        "color": "#0F3B5E",
+        "bold": true,
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "ML307R 4G"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "ML307R 4G",
+          "resolvedTextStyle": {
+            "fontSize": 20,
+            "color": "#0F3B5E",
+            "bold": true
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "ML307R 4G",
+              "fontSize": 20,
+              "color": "#0F3B5E",
+              "bold": true
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 14,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/8jqh0fep",
+      "id": "14",
+      "bbox": [
+        678,
+        146,
+        500,
+        20
+      ],
+      "geometry": "rect",
+      "text": "UART SCI9 115200 LTE Cat.1",
+      "textPreview": "UART SCI9 115200 LTE Cat.1",
+      "resolvedFontSize": 13,
+      "resolvedTextStyle": {
+        "fontSize": 13,
+        "typeface": "+mn-lt",
+        "color": "#334155",
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "UART SCI9 115200 LTE Cat.1"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "UART SCI9 115200 LTE Cat.1",
+          "resolvedTextStyle": {
+            "fontSize": 13,
+            "color": "#334155"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "UART SCI9 115200 LTE Cat.1",
+              "fontSize": 13,
+              "color": "#334155"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 15,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/x4nap4r6",
+      "id": "15",
+      "bbox": [
+        678,
+        174,
+        500,
+        20
+      ],
+      "geometry": "rect",
+      "text": "Init->InitNetwork->HttpPost(url,json)",
+      "textPreview": "Init->InitNetwork->HttpPost(url,json)",
+      "resolvedFontSize": 13,
+      "resolvedTextStyle": {
+        "fontSize": 13,
+        "typeface": "+mn-lt",
+        "color": "#334155",
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Init->InitNetwork->HttpPost(url,json)"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Init->InitNetwork->HttpPost(url,json)",
+          "resolvedTextStyle": {
+            "fontSize": 13,
+            "color": "#334155"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Init->InitNetwork->HttpPost(url,json)",
+              "fontSize": 13,
+              "color": "#334155"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 16,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/qd4vmtwr",
+      "id": "16",
+      "bbox": [
+        678,
+        202,
+        500,
+        20
+      ],
+      "geometry": "rect",
+      "text": "JSON:{device,type,fall,human,height_m,temp}",
+      "textPreview": "JSON:{device,type,fall,human,height_m,temp}",
+      "resolvedFontSize": 12,
+      "resolvedTextStyle": {
+        "fontSize": 12,
+        "typeface": "+mn-lt",
+        "color": "#334155",
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "JSON:{device,type,fall,human,height_m,temp}"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "JSON:{device,type,fall,human,height_m,temp}",
+          "resolvedTextStyle": {
+            "fontSize": 12,
+            "color": "#334155"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "JSON:{device,type,fall,human,height_m,temp}",
+              "fontSize": 12,
+              "color": "#334155"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 17,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/fyxobm58",
+      "id": "17",
+      "bbox": [
+        678,
+        232,
+        500,
+        20
+      ],
+      "geometry": "rect",
+      "text": "失败重试30s超时 60s断线重连",
+      "textPreview": "失败重试30s超时 60s断线重连",
+      "resolvedFontSize": 13,
+      "resolvedTextStyle": {
+        "fontSize": 13,
+        "typeface": "+mn-lt",
+        "color": "#334155",
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "失败重试30s超时 60s断线重连"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "失败重试30s超时 60s断线重连",
+          "resolvedTextStyle": {
+            "fontSize": 13,
+            "color": "#334155"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "失败重试30s超时 60s断线重连",
+              "fontSize": 13,
+              "color": "#334155"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 18,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/87ed8bat",
+      "id": "18",
+      "bbox": [
+        678,
+        260,
+        500,
+        20
+      ],
+      "geometry": "rect",
+      "text": "OLED显示4G:OK/FAIL/TIMEOUT",
+      "textPreview": "OLED显示4G:OK/FAIL/TIMEOUT",
+      "resolvedFontSize": 13,
+      "resolvedTextStyle": {
+        "fontSize": 13,
+        "typeface": "+mn-lt",
+        "color": "#334155",
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "OLED显示4G:OK/FAIL/TIMEOUT"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "OLED显示4G:OK/FAIL/TIMEOUT",
+          "resolvedTextStyle": {
+            "fontSize": 13,
+            "color": "#334155"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "OLED显示4G:OK/FAIL/TIMEOUT",
+              "fontSize": 13,
+              "color": "#334155"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    }
+  ],
+  "composeRuns": []
+}
