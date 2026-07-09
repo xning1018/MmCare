@@ -29,15 +29,18 @@ Mmcare 是一款面向智慧养老、病房监护等场景打造的高可靠性�
 ```text
 Mmcare/
 ├── src/
-│   ├── hal_entry.c        # 主循环，状态机，4G 上传逻辑，低功耗管理
-│   ├── ld2450.c/h         # 轨迹雷达串口解析及目标追踪
-│   ├── fall_alarm.c/h     # 主跌倒雷达处理及双雷达交叉验证逻辑
-│   ├── ml307r.c/h         # 4G 模组 AT 指令驱动与 HTTP/TCP 协议栈
-│   ├── my1680.c/h         # 语音播报芯片驱动
-│   ├── led.c/h, buzzer.c  # 声光警报控制
-│   └── oled.c/h           # OLED 屏幕驱动及 UI 渲染
+│   └── hal_entry.c        # 主循环、状态机调度、4G 上传及低功耗管理
 ├── API/
-│   └── ntc_temp.c/h       # NTC ADC 采样与温度物理公式换算
+│   ├── fall_alarm.c/h     # 主跌倒雷达处理及双雷达交叉验证逻辑
+│   ├── ld2450.c/h         # 轨迹雷达串口解析及目标追踪
+│   ├── radar_uart.c/h     # 雷达通用串口协议通信底层
+│   ├── radar_display.c/h  # 雷达状态与信息显示处理
+│   ├── ml307r.c/h         # 4G 模组 AT 指令驱动与 HTTP 协议栈
+│   ├── ntc_temp.c/h       # NTC ADC 采样与温度物理公式换算
+│   ├── light_sensor.c/h   # 环境光传感器 ADC 采样驱动
+│   ├── oled.c/h           # OLED 屏幕驱动及 UI 渲染 (含 OLED_Font.h)
+│   ├── my1680.c/h         # 语音播报芯片驱动
+│   └── led.c/h, buzzer.c  # LED 视觉指示与蜂鸣器高频警报控制
 └── README.md
 ```
 
