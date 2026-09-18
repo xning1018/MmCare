@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MMCare 智能康养监护终端 - 实时遥测大屏</title>
+  <style>
+    :root {
+      --bg-main: #0a0e17;
+      --bg-card: rgba(17, 24, 39, 0.85);
+      --bg-card-hover: rgba(31, 41, 55, 0.9);
+      --border-color: rgba(55, 65, 81, 0.6);
+      --border-accent: rgba(59, 130, 246, 0.5);
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --accent-blue: #3b82f6;
+      --accent-cyan: #06b6d4;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-rose: #ef4444;
+      --glow-emerald: rgba(16, 185, 129, 0.25);
+      --glow-rose: rgba(239, 68, 68, 0.35);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(14, 165, 233, 0.12) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(99, 102, 241, 0.1) 0px, transparent 50%);
+    }
+
+    /* 顶部导航 */
+    header {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .brand-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-badge {
+      background: linear-gradient(135deg, #2563eb, #06b6d4);
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      font-size: 14px;
+      box-shadow: 0 0 15px rgba(37, 99, 235, 0.4);
+    }
+
+    .brand-text h1 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 0.5px;
+    }
+
+    .brand-text p {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .header-status {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid var(--border-color);
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 13px;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent-emerald);
+      box-shadow: 0 0 8px var(--accent-emerald);
+      animation: pulse-dot 2s infinite;
+    }
+
+    .status-dot.offline {
+      background: var(--accent-rose);
+      box-shadow: 0 0 8px var(--accent-rose);
+      animation: none;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    .btn {
+      background: rgba(37, 99, 235, 0.2);
+      border: 1px solid rgba(59, 130, 246, 0.4);
+      color: #93c5fd;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      background: rgba(37, 99, 235, 0.4);
+      border-color: #60a5fa;
+      color: #fff;
+    }
+
+    .btn-alert-test {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+    }
+
+    .btn-alert-test:hover {
+      background: rgba(239, 68, 68, 0.4);
+      color: #fff;
+    }
+
+    /* 主容器 */
+    main {
+      max-width: 1560px;
+      margin: 0 auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* 全局警报横幅 (跌倒时弹出) */
+    #fall-alarm-banner {
+      display: none;
+      background: linear-gradient(90deg, rgba(220, 38, 38, 0.95), rgba(185, 28, 28, 0.95));
+      border: 1px solid #ef4444;
+      border-radius: 12px;
+      padding: 16px 24px;
+      color: #fff;
+      box-shadow: 0 0 25px rgba(239, 68, 68, 0.6);
+      animation: alarm-pulse 1s infinite alternate;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    @keyframes alarm-pulse {
+      from { box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
+      to { box-shadow: 0 0 35px rgba(239, 68, 68, 0.8); }
+    }
+
+    .alarm-content {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .alarm-icon {
+      font-size: 32px;
+    }
+
+    /* 指标卡片网格 */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 18px;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(8px);
+      transition: border-color 0.25s, transform 0.25s;
+    }
+
+    .card:hover {
+      border-color: var(--border-accent);
+      transform: translateY(-2px);
+    }
+
+    .card-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .card-value {
+      font-size: 30px;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+
+    .card-unit {
+      font-size: 14px;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    .card-subtext {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .badge-success { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+    .badge-danger { background: rgba(239, 68, 68, 0.25); color: #f87171; }
+    .badge-warning { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+    .badge-info { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+
+    /* 主可视化两栏布局 */
+    .dashboard-body {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 1080px) {
+      .dashboard-body {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* 雷达屏幕 Canvas */
+    .radar-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .radar-header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .canvas-container {
+      position: relative;
+      width: 100%;
+      max-width: 440px;
+      aspect-ratio: 1 / 1;
+      margin: 10px auto;
+    }
+
+    canvas#radarCanvas {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: radial-gradient(circle, #0f1f33 0%, #080d1a 100%);
+      border: 2px solid rgba(14, 165, 233, 0.3);
+      box-shadow: 0 0 30px rgba(14, 165, 233, 0.15);
+    }
+
+    /* 历史图表与日志区 */
+    .chart-card {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    canvas#historyChart {
+      width: 100%;
+      height: 200px;
+      border-radius: 8px;
+      background: rgba(10, 15, 29, 0.5);
+    }
+
+    /* 实时表格 */
+    .table-container {
+      margin-top: 10px;
+      max-height: 220px;
+      overflow-y: auto;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      text-align: left;
+    }
+
+    th {
+      background: rgba(30, 41, 59, 0.9);
+      color: var(--text-muted);
+      padding: 8px 12px;
+      position: sticky;
+      top: 0;
+      font-weight: 600;
+    }
+
+    td {
+      padding: 8px 12px;
+      border-top: 1px solid rgba(55, 65, 81, 0.4);
+      color: #e5e7eb;
+    }
+
+    tr:nth-child(even) {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    tr.highlight-fall {
+      background: rgba(239, 68, 68, 0.2) !important;
+    }
+
+    /* 配置浮层与底部栏 */
+    .config-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .config-bar input {
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid var(--border-color);
+      color: #fff;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+
+    .config-bar input:focus {
+      outline: none;
+      border-color: var(--accent-blue);
+    }
+
+    /* 滚动条 */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.5);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(75, 85, 99, 0.6);
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 顶部导航 -->
+  <header>
+    <div class="brand-title">
+      <div class="logo-badge">MMCARE</div>
+      <div class="brand-text">
+        <h1>智能康养监护终端 · 实时遥测大屏</h1>
+        <p>基于瑞萨 RA MCU + 双毫米波雷达 + 4G Cat.1 蜂窝上云</p>
+      </div>
+    </div>
+
+    <div class="header-status">
+      <div class="status-pill">
+        <span class="status-dot" id="server-dot"></span>
+        <span id="server-status-text">连接服务器中...</span>
+      </div>
+      <div class="status-pill">
+        <span>最后数据:</span>
+        <strong id="time-ago-text" style="color: #60a5fa;">0秒前</strong>
+      </div>
+      <button class="btn btn-alert-test" onclick="toggleAudioAlert()">🔔 警报静音</button>
+      <button class="btn" onclick="fetchLatestData(true)">🔄 立即刷新</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- 跌倒警报全局横幅 -->
+    <div id="fall-alarm-banner">
+      <div class="alarm-content">
+        <div class="alarm-icon">🚨</div>
+        <div>
+          <h2 style="font-size: 18px; font-weight: 800;">【紧急跌倒警报】毫米波雷达检测到长者疑似跌倒！</h2>
+          <p style="font-size: 13px; opacity: 0.9; margin-top: 2px;">双雷达交叉验证算法已触发，请立即与长者联系或前往现场确认！</p>
+        </div>
+      </div>
+      <button class="btn" style="background: #fff; color: #b91c1c; font-weight: 700;" onclick="dismissFallAlert()">确认已知晓</button>
+    </div>
+
+    <!-- 核心指标卡片 -->
+    <div class="metrics-grid">
+      <!-- 设备在线 -->
+      <div class="card">
+        <div class="card-label">
+          <span>终端设备状态</span>
+          <span class="badge badge-info" id="device-id-badge">MM001</span>
+        </div>
+        <div class="card-value">
+          <span id="device-online-status" style="color: #34d399;">守护中</span>
+        </div>
+        <div class="card-subtext">
+          <span id="device-location">位置: 浴室 · 心跳正常</span>
+        </div>
+      </div>
+
+      <!-- 跌倒安全监测 -->
+      <div class="card" id="card-fall">
+        <div class="card-label">
+          <span>跌倒安全监测</span>
+          <span class="badge badge-success" id="fall-badge">安全</span>
+        </div>
+        <div class="card-value">
+          <span id="fall-status-text" style="color: #34d399;">正常</span>
+        </div>
+        <div class="card-subtext" id="fall-subtext">
+          <span>双雷达交叉验证算法持续监测</span>
+        </div>
+      </div>
+
+      <!-- 人体姿态 -->
+      <div class="card">
+        <div class="card-label">
+          <span>长者空间姿态</span>
+          <span class="badge badge-info" id="human-badge">有人</span>
+        </div>
+        <div class="card-value">
+          <span id="pose-text" style="color: #60a5fa;">站立 (Standing)</span>
+        </div>
+        <div class="card-subtext">
+          <span id="human-detect-sub">LD2450 连续目标锁定</span>
+        </div>
+      </div>
+
+      <!-- 环境温度 -->
+      <div class="card">
+        <div class="card-label">
+          <span>环境温度 (NTC)</span>
+          <span class="badge badge-info">温度传感器</span>
+        </div>
+        <div class="card-value">
+          <span id="temp-val">25.5</span>
+          <span class="card-unit">℃</span>
+        </div>
+        <div class="card-subtext">
+          <span id="temp-status">室内温度舒适 (22-26℃)</span>
+        </div>
+      </div>
+
+      <!-- 雷达距离 -->
+      <div class="card">
+        <div class="card-label">
+          <span>目标探测距离</span>
+          <span class="badge badge-info">LD2450</span>
+        </div>
+        <div class="card-value">
+          <span id="dist-val">4.73</span>
+          <span class="card-unit">米</span>
+        </div>
+        <div class="card-subtext">
+          <span id="dist-sub">探测有效范围 0-8 米</span>
+        </div>
+      </div>
+
+      <!-- 运动速度 -->
+      <div class="card">
+        <div class="card-label">
+          <span>运动速度矢量</span>
+          <span class="badge badge-info">毫米波多普勒</span>
+        </div>
+        <div class="card-value">
+          <span id="speed-val">+5.0</span>
+          <span class="card-unit">cm/s</span>
+        </div>
+        <div class="card-subtext">
+          <span id="speed-sub">微动 / 慢步走状态</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 主体视觉两栏 -->
+    <div class="dashboard-body">
+      <!-- 左栏：毫米波雷达空间雷达图 -->
+      <div class="card radar-card">
+        <div class="radar-header">
+          <div>
+            <h3 style="font-size: 15px; font-weight: 700; color: #fff;">毫米波空间雷达探测视界</h3>
+            <p style="font-size: 12px; color: var(--text-muted);">LD2450 坐标跟踪 (FOV 120°，有效探测半径 8m)</p>
+          </div>
+          <span class="badge badge-success" id="radar-live-badge">扫描中</span>
+        </div>
+
+        <div class="canvas-container">
+          <canvas id="radarCanvas" width="400" height="400"></canvas>
+        </div>
+
+        <div style="display: flex; gap: 16px; font-size: 12px; color: var(--text-muted); margin-top: 8px;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <div style="width: 10px; height: 10px; border-radius: 50%; background: #38bdf8;"></div>
+            <span>当前人体位置</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <div style="width: 10px; height: 10px; border-radius: 50%; background: #ef4444;"></div>
+            <span>疑似跌倒突变点</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右栏：走势曲线与实时日志 -->
+      <div class="card chart-card">
+        <div>
+          <h3 style="font-size: 15px; font-weight: 700; color: #fff;">环境温度与目标距离实时变化趋势</h3>
+          <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+            <span style="color: #f59e0b;">● 橙线：温度 (℃)</span> &nbsp;&nbsp; 
+            <span style="color: #06b6d4;">● 蓝线：雷达距离 (m)</span>
+          </p>
+        </div>
+
+        <canvas id="historyChart" width="600" height="200"></canvas>
+
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <h4 style="font-size: 13px; font-weight: 600; color: var(--text-muted);">终端 4G 实时上报历史数据帧</h4>
+            <span style="font-size: 12px; color: var(--text-muted);">共缓存 <span id="data-count">0</span> 条记录</span>
+          </div>
+
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>时间</th>
+                  <th>温度</th>
+                  <th>距离</th>
+                  <th>速度</th>
+                  <th>人体</th>
+                  <th>姿态</th>
+                  <th>安全状态</th>
+                </tr>
+              </thead>
+              <tbody id="telemetry-tbody">
+                <!-- 动态填充 -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部配置与连接参数 -->
+    <div class="config-bar">
+      <span>⚙️ 服务器配置:</span>
+      <label>
+        API 地址:
+        <input type="text" id="config-server-url" value="http://182.254.135.92:8080" style="width: 230px;" onchange="onConfigChange()">
+      </label>
+      <label>
+        API Key:
+        <input type="text" id="config-api-key" value="mmcare-demo-key-2026" style="width: 180px;" onchange="onConfigChange()">
+      </label>
+      <label>
+        轮询频率:
+        <select id="config-interval" style="background: #1e293b; color: #fff; border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 6px;" onchange="onConfigChange()">
+          <option value="1000" selected>1 秒</option>
+          <option value="2000">2 秒</option>
+          <option value="5000">5 秒</option>
+        </select>
+      </label>
+      <span style="margin-left: auto; font-size: 12px; color: #6b7280;">MMCare 2.0.0 IoT Terminal Ready</span>
+    </div>
+  </main>
+
+  <script>
+    // 全局状态
+    let serverBase = localStorage.getItem("mmcare_server_url") || "http://182.254.135.92:8080";
+    let apiKey = localStorage.getItem("mmcare_api_key") || "mmcare-demo-key-2026";
+    let pollIntervalMs = parseInt(localStorage.getItem("mmcare_poll_interval") || "1500");
+    let pollTimer = null;
+    let audioAlertEnabled = true;
+
+    // 内存数据缓存
+    let historyPoints = []; // [{ time, temp, dist, fall, speed }]
+    let lastSeenTimestamp = null;
+    let currentFallState = false;
+    let radarTarget = { dist: 4.5, angle: 0, speed: 0, isHuman: true, isFall: false };
+    let radarScanAngle = 0;
+
+    // 音频蜂鸣器模拟
+    let audioCtx = null;
+    function playBeep(freq = 880, duration = 0.2) {
+      if (!audioAlertEnabled) return;
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.frequency.value = freq;
+        gain.gain.value = 0.15;
+        osc.start();
+        setTimeout(() => { osc.stop(); }, duration * 1000);
+      } catch (e) {
+        console.warn("Audio error", e);
+      }
+    }
+
+    function toggleAudioAlert() {
+      audioAlertEnabled = !audioAlertEnabled;
+      alert(audioAlertEnabled ? "已开启警报蜂鸣声音提示" : "已将警报静音");
+    }
+
+    function dismissFallAlert() {
+      document.getElementById("fall-alarm-banner").style.display = "none";
+    }
+
+    function onConfigChange() {
+      serverBase = document.getElementById("config-server-url").value.trim().replace(/\/$/, "");
+      apiKey = document.getElementById("config-api-key").value.trim();
+      pollIntervalMs = parseInt(document.getElementById("config-interval").value);
+      localStorage.setItem("mmcare_server_url", serverBase);
+      localStorage.setItem("mmcare_api_key", apiKey);
+      localStorage.setItem("mmcare_poll_interval", pollIntervalMs);
+      restartPolling();
+    }
+
+    // 启动/重置轮询
+    function restartPolling() {
+      if (pollTimer) clearInterval(pollTimer);
+      fetchLatestData();
+      pollTimer = setInterval(fetchLatestData, pollIntervalMs);
+    }
+
+    // 核心拉取函数
+    async function fetchLatestData(isManual = false) {
+      const url = `${serverBase}/api/data/latest?api_key=${encodeURIComponent(apiKey)}`;
+      const fallEventsUrl = `${serverBase}/api/v1/fall/events?device_id=MM001&limit=20&api_key=${encodeURIComponent(apiKey)}`;
+
+      try {
+        const [latestResp, fallResp] = await Promise.allSettled([
+          fetch(url, { headers: { "X-API-Key": apiKey }, signal: AbortSignal.timeout(4000) }),
+          fetch(fallEventsUrl, { headers: { "X-API-Key": apiKey }, signal: AbortSignal.timeout(4000) })
+        ]);
+
+        if (latestResp.status !== "fulfilled" || !latestResp.value.ok) {
+          throw new Error(`HTTP ${latestResp.value ? latestResp.value.status : "Err"}`);
+        }
+        const json = await latestResp.value.json();
+
+        let fallEvents = [];
+        if (fallResp.status === "fulfilled" && fallResp.value.ok) {
+          try {
+            const fJson = await fallResp.value.json();
+            fallEvents = fJson.data || [];
+          } catch(e) {}
+        }
+        
+        if (json.code === 200 && json.data) {
+          updateUI(json.data, fallEvents, json.server_time);
+          setServerOnline(true);
+        } else {
+          throw new Error(json.message || "Invalid payload");
+        }
+      } catch (err) {
+        setServerOnline(false, err.message);
+      }
+    }
+
+    // 更新界面各控件
+    function updateUI(data, fallEvents = [], serverTimeStr = "") {
+      const ts = data.timestamp || new Date().toLocaleTimeString();
+      lastSeenTimestamp = new Date();
+
+      // 设备与在线状态
+      document.getElementById("device-id-badge").innerText = data.device_id || "MM001";
+      document.getElementById("device-online-status").innerText = data.online ? "守护中 (在线)" : "设备离线";
+      document.getElementById("device-online-status").style.color = data.online ? "#34d399" : "#f87171";
+
+      // 温度
+      const temp = typeof data.temperature === "number" ? data.temperature.toFixed(1) : "--";
+      document.getElementById("temp-val").innerText = temp;
+      if (temp !== "--") {
+        const tVal = parseFloat(temp);
+        const tDesc = tVal < 20 ? "室内温度偏凉" : tVal > 28 ? "室内温度偏热" : "室内温度适宜舒适";
+        document.getElementById("temp-status").innerText = tDesc;
+      }
+
+      // 人体检测
+      const isHuman = !!data.person;
+      const humanBadge = document.getElementById("human-badge");
+      humanBadge.innerText = isHuman ? "有人" : "无人";
+      humanBadge.className = isHuman ? "badge badge-info" : "badge badge-warning";
+
+      // 姿态
+      const pose = data.pose || (isHuman ? "standing" : "away");
+      const poseMap = {
+        "standing": "站立 (Standing)",
+        "sitting": "坐姿 (Sitting)",
+        "lying": "卧床/平躺 (Lying)",
+        "falling": "跌倒 (Falling)",
+        "away": "离开未在场 (Away)"
+      };
+      document.getElementById("pose-text").innerText = poseMap[pose] || pose;
+
+      // 距离与速度
+      const dist = typeof data.distance === "number" ? data.distance.toFixed(2) : "0.00";
+      document.getElementById("dist-val").innerText = dist;
+
+      const speed = typeof data.motion_speed === "number" ? data.motion_speed.toFixed(1) : "0.0";
+      document.getElementById("speed-val").innerText = (speed > 0 ? "+" : "") + speed;
+
+      // 跌倒判断（精准对齐单片机逻辑：仅根据单片机实际触发的报警而报警）
+      const rawFall = data.fall;
+      // 1. 如果数据中包含单片机报警值 1, 11 或 111：
+      let isFall = (rawFall === 1 || rawFall === 11 || rawFall === 111 || 
+                    rawFall === "1" || rawFall === "11" || rawFall === "111");
+
+      // 2. 联动单片机真实上报的硬件跌倒事件（过滤掉服务端生成的 virtual 模拟事件，只认单片机硬件 source: radar）
+      if (!isFall && fallEvents && fallEvents.length > 0) {
+        const radarFall = fallEvents.find(e => e.source === "radar");
+        if (radarFall && radarFall.ts) {
+          const refTime = serverTimeStr ? new Date(serverTimeStr.replace(/-/g, "/")).getTime() : Date.now();
+          const eventTime = new Date(radarFall.ts.replace(/-/g, "/")).getTime();
+          const diffSec = (refTime - eventTime) / 1000;
+          // 如果单片机硬件跌倒事件发生在最近 25 秒内（单片机9秒声光报警 + 网络上传延时）：
+          if (!isNaN(diffSec) && diffSec >= -5 && diffSec <= 25) {
+            isFall = true;
+          }
+        }
+      }
+
+      const fallBadge = document.getElementById("fall-badge");
+      const fallStatusText = document.getElementById("fall-status-text");
+      const fallBanner = document.getElementById("fall-alarm-banner");
+      const fallCard = document.getElementById("card-fall");
+
+      if (isFall) {
+        fallBadge.className = "badge badge-danger";
+        fallBadge.innerText = "🚨 跌倒警报";
+        fallStatusText.innerText = "检测到跌倒！";
+        fallStatusText.style.color = "#ef4444";
+        fallBanner.style.display = "flex";
+        fallCard.style.borderColor = "#ef4444";
+        fallCard.style.boxShadow = "0 0 15px rgba(239, 68, 68, 0.4)";
+        if (!currentFallState) {
+          playBeep(920, 0.5); // 首次触发播放警报
+        }
+        currentFallState = true;
+      } else {
+        fallBadge.className = "badge badge-success";
+        fallBadge.innerText = "安全";
+        fallStatusText.innerText = "正常";
+        fallStatusText.style.color = "#34d399";
+        fallBanner.style.display = "none";
+        fallCard.style.borderColor = "var(--border-color)";
+        fallCard.style.boxShadow = "none";
+        currentFallState = false;
+      }
+
+      // 更新雷达绘图状态
+      radarTarget.dist = Math.min(Math.max(parseFloat(dist) || 0, 0), 8);
+      radarTarget.speed = parseFloat(speed) || 0;
+      radarTarget.isHuman = isHuman;
+      radarTarget.isFall = isFall;
+
+      // 追加到历史趋势数据
+      if (historyPoints.length === 0 || historyPoints[historyPoints.length - 1].time !== ts) {
+        historyPoints.push({
+          time: ts.split(" ")[1] || ts,
+          temp: parseFloat(temp) || 25,
+          dist: parseFloat(dist) || 0,
+          speed: parseFloat(speed) || 0,
+          fall: isFall,
+          pose: poseMap[pose] || pose,
+          human: isHuman
+        });
+
+        if (historyPoints.length > 30) historyPoints.shift();
+        appendTableRow(historyPoints[historyPoints.length - 1]);
+        document.getElementById("data-count").innerText = historyPoints.length;
+      }
+    }
+
+    // 追加历史表格
+    function appendTableRow(item) {
+      const tbody = document.getElementById("telemetry-tbody");
+      const tr = document.createElement("tr");
+      if (item.fall) tr.className = "highlight-fall";
+
+      tr.innerHTML = `
+        <td>${item.time}</td>
+        <td>${item.temp} ℃</td>
+        <td>${item.dist} m</td>
+        <td>${item.speed} cm/s</td>
+        <td>${item.human ? "👤 有人" : "⚪ 无人"}</td>
+        <td>${item.pose}</td>
+        <td>${item.fall ? "<span style='color: #ef4444; font-weight: 700;'>🚨 跌倒报警</span>" : "<span style='color: #34d399;'>正常</span>"}</td>
+      `;
+
+      tbody.insertBefore(tr, tbody.firstChild);
+      if (tbody.children.length > 50) {
+        tbody.removeChild(tbody.lastChild);
+      }
+    }
+
+    // 设置服务器连接状态
+    function setServerOnline(online, errMsg = "") {
+      const dot = document.getElementById("server-dot");
+      const txt = document.getElementById("server-status-text");
+      if (online) {
+        dot.className = "status-dot";
+        txt.innerText = "云端连接正常 (182.254.135.92)";
+      } else {
+        dot.className = "status-dot offline";
+        txt.innerText = "云端连接中断 " + (errMsg ? `(${errMsg})` : "");
+      }
+    }
+
+    // 计时器：计算距离最后接收过去了多少秒
+    setInterval(() => {
+      if (lastSeenTimestamp) {
+        const secs = Math.floor((new Date() - lastSeenTimestamp) / 1000);
+        document.getElementById("time-ago-text").innerText = `${secs} 秒前`;
+        if (secs > 15) {
+          document.getElementById("time-ago-text").style.color = "#ef4444";
+        } else {
+          document.getElementById("time-ago-text").style.color = "#60a5fa";
+        }
+      }
+    }, 1000);
+
+    // ==========================================
+    // Canvas 1: 毫米波雷达空间雷达扫描图
+    // ==========================================
+    const radarCanvas = document.getElementById("radarCanvas");
+    const radarCtx = radarCanvas.getContext("2d");
+
+    function drawRadar() {
+      const w = radarCanvas.width;
+      const h = radarCanvas.height;
+      const cx = w / 2;
+      const cy = h / 2;
+      const maxR = w * 0.45;
+
+      radarCtx.clearRect(0, 0, w, h);
+
+      // 1. 画同心圆与距离刻度
+      radarCtx.lineWidth = 1;
+      for (let i = 1; i <= 4; i++) {
+        const r = (maxR / 4) * i;
+        radarCtx.strokeStyle = "rgba(14, 165, 233, 0.25)";
+        radarCtx.beginPath();
+        radarCtx.arc(cx, cy, r, 0, Math.PI * 2);
+        radarCtx.stroke();
+
+        // 刻度文字
+        radarCtx.fillStyle = "rgba(14, 165, 233, 0.6)";
+        radarCtx.font = "10px sans-serif";
+        radarCtx.fillText(`${i * 2}m`, cx + 4, cy - r + 12);
+      }
+
+      // 2. 十字准线与角度虚线
+      radarCtx.strokeStyle = "rgba(14, 165, 233, 0.2)";
+      radarCtx.beginPath();
+      radarCtx.moveTo(cx - maxR, cy);
+      radarCtx.lineTo(cx + maxR, cy);
+      radarCtx.moveTo(cx, cy - maxR);
+      radarCtx.lineTo(cx, cy + maxR);
+      radarCtx.stroke();
+
+      // 3. 扫描扇线
+      radarScanAngle = (radarScanAngle + 0.03) % (Math.PI * 2);
+      radarCtx.save();
+      radarCtx.translate(cx, cy);
+      radarCtx.rotate(radarScanAngle);
+
+      const grad = radarCtx.createRadialGradient(0, 0, 0, 0, 0, maxR);
+      grad.addColorStop(0, "rgba(6, 182, 212, 0.4)");
+      grad.addColorStop(1, "rgba(6, 182, 212, 0)");
+      radarCtx.fillStyle = grad;
+
+      radarCtx.beginPath();
+      radarCtx.moveTo(0, 0);
+      radarCtx.arc(0, 0, maxR, -0.25, 0);
+      radarCtx.closePath();
+      radarCtx.fill();
+      radarCtx.restore();
+
+      // 4. 绘制人体目标光点
+      if (radarTarget.isHuman && radarTarget.dist > 0) {
+        const targetR = (radarTarget.dist / 8) * maxR; // 8米为全量程
+        // 目标偏角模拟或展示
+        const angle = -Math.PI / 2 + (Math.sin(Date.now() / 3000) * 0.3);
+        const tx = cx + targetR * Math.cos(angle);
+        const ty = cy + targetR * Math.sin(angle);
+
+        // 目标外圈扩散波纹
+        const pulse = (Date.now() % 1500) / 1500;
+        radarCtx.beginPath();
+        radarCtx.arc(tx, ty, 8 + pulse * 14, 0, Math.PI * 2);
+        radarCtx.strokeStyle = radarTarget.isFall 
+          ? `rgba(239, 68, 68, ${1 - pulse})` 
+          : `rgba(56, 189, 248, ${1 - pulse})`;
+        radarCtx.lineWidth = 2;
+        radarCtx.stroke();
+
+        // 核心亮点
+        radarCtx.beginPath();
+        radarCtx.arc(tx, ty, 6, 0, Math.PI * 2);
+        radarCtx.fillStyle = radarTarget.isFall ? "#ef4444" : "#38bdf8";
+        radarCtx.fill();
+        radarCtx.strokeStyle = "#fff";
+        radarCtx.lineWidth = 1.5;
+        radarCtx.stroke();
+
+        // 标注距离与速度
+        radarCtx.fillStyle = "#fff";
+        radarCtx.font = "11px sans-serif";
+        radarCtx.fillText(`${radarTarget.dist.toFixed(2)}m (${radarTarget.speed}cm/s)`, tx + 10, ty + 4);
+      }
+
+      requestAnimationFrame(drawRadar);
+    }
+
+    // ==========================================
+    // Canvas 2: 趋势折线图自绘
+    // ==========================================
+    const chartCanvas = document.getElementById("historyChart");
+    const chartCtx = chartCanvas.getContext("2d");
+
+    function drawChart() {
+      const w = chartCanvas.width;
+      const h = chartCanvas.height;
+      chartCtx.clearRect(0, 0, w, h);
+
+      if (historyPoints.length < 2) {
+        chartCtx.fillStyle = "#6b7280";
+        chartCtx.font = "12px sans-serif";
+        chartCtx.fillText("正在累积实时数据流...", 20, 30);
+        return;
+      }
+
+      const padding = 30;
+      const plotW = w - padding * 2;
+      const plotH = h - padding * 2;
+
+      // 绘制背景网格线
+      chartCtx.strokeStyle = "rgba(55, 65, 81, 0.4)";
+      chartCtx.lineWidth = 1;
+      for (let i = 0; i <= 3; i++) {
+        const y = padding + (plotH / 3) * i;
+        chartCtx.beginPath();
+        chartCtx.moveTo(padding, y);
+        chartCtx.lineTo(w - padding, y);
+        chartCtx.stroke();
+      }
+
+      const count = historyPoints.length;
+      const stepX = plotW / (count - 1);
+
+      // 1. 绘制温度曲线 (橙线，范围 15 - 35 ℃)
+      chartCtx.beginPath();
+      chartCtx.strokeStyle = "#f59e0b";
+      chartCtx.lineWidth = 2;
+      historyPoints.forEach((p, idx) => {
+        const x = padding + idx * stepX;
+        const normTemp = Math.min(Math.max((p.temp - 15) / 20, 0), 1);
+        const y = h - padding - normTemp * plotH;
+        if (idx === 0) chartCtx.moveTo(x, y);
+        else chartCtx.lineTo(x, y);
+      });
+      chartCtx.stroke();
+
+      // 2. 绘制距离曲线 (蓝线，范围 0 - 8 米)
+      chartCtx.beginPath();
+      chartCtx.strokeStyle = "#06b6d4";
+      chartCtx.lineWidth = 2;
+      historyPoints.forEach((p, idx) => {
+        const x = padding + idx * stepX;
+        const normDist = Math.min(Math.max(p.dist / 8, 0), 1);
+        const y = h - padding - normDist * plotH;
+        if (idx === 0) chartCtx.moveTo(x, y);
+        else chartCtx.lineTo(x, y);
+      });
+      chartCtx.stroke();
+    }
+
+    setInterval(drawChart, 1000);
+
+    // 页面启动初始化
+    window.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("config-server-url").value = serverBase;
+      document.getElementById("config-api-key").value = apiKey;
+      document.getElementById("config-interval").value = pollIntervalMs;
+
+      // 启动雷达扫描动画
+      drawRadar();
+
+      // 启动轮询
+      restartPolling();
+    });
+  </script>
+</body>
+</html>

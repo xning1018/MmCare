@@ -3,8 +3,8 @@
 
 #include "hal_data.h"
 
-// 光敏传感器 D0 接口连接的引脚
-#define LIGHT_SENSOR_PIN BSP_IO_PORT_00_PIN_10
+// 光敏传感器 D0 接口连接的引脚 (已修改为 FSP 中配置的 IRQ 引脚)
+#define LIGHT_SENSOR_PIN BSP_IO_PORT_10_PIN_09
 
 void LightSensor_Init(void);
 uint8_t LightSensor_GetStatus(void);

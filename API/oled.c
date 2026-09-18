@@ -13,7 +13,10 @@ static void OLED_I2C_WriteBytes(uint8_t *p_data, uint32_t len)
 {
     g_i2c_tx_complete = false;
     fsp_err_t err = R_IIC_MASTER_Write(&g_i2c_master0_ctrl, p_data, len, false);
-    if (FSP_SUCCESS == err) while (!g_i2c_tx_complete);
+    if (FSP_SUCCESS == err) {
+        uint32_t timeout = 50000;
+        while (!g_i2c_tx_complete && --timeout);
+    }
 }
 
 void OLED_WriteCommand(uint8_t Command)

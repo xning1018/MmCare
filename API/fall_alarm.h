@@ -12,7 +12,7 @@
 #define MY1680_DEFAULT_VOLUME  25u
 
 /* 跌倒确认帧数；雷达 2s 无新帧视为链路异常 */
-#define FALL_CONFIRM_TICKS       3u
+#define FALL_CONFIRM_TICKS       1u
 #define RADAR_STALE_TIMEOUT_MS   2000u
 
 typedef struct
