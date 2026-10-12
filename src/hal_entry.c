@@ -1,10 +1,14 @@
 /* hal_entry.c */
+#include "ai_fall_engine.h" // 引入端侧 PINN-CfC 液态神经网络与 1024 粒子滤波跌倒引擎
 #include "buzzer.h"
 #include "fall_alarm.h" // 引入跌倒逻辑头文件
 #include "hal_data.h"
 #include "ld2450.h" // 引入 LD2450 雷达头文件
 #include "led.h"
 #include "light_sensor.h"
+
+
+
 #include "ml307r.h"
 #include "my1680.h"
 #include "ntc_temp.h" // 引入温度传感器头文件
@@ -62,6 +66,7 @@ static int should_upload = 0;
 static bool is_first_frame = true;
 static int g_4g_ok = 0;
 static int g_system_ready = 0;
+static uint32_t g_ready_tick = 0;
 volatile uint32_t g_last_ld2450_uart_tick = 0; // LD2450 串口通信保活心跳
 
 void System_Yield(void) {
@@ -72,6 +77,7 @@ void System_Yield(void) {
   s_in_yield = true;
 
   uint32_t current_tick = g_system_tick;
+  bool warmup_done = (g_system_ready != 0) && ((current_tick - g_ready_tick) >= 5000u);
 
   /* LD2450 串口通信看门狗与自愈机制：
    * LD2450 正常每 100ms 发送一帧数据。
@@ -89,13 +95,13 @@ void System_Yield(void) {
   Radar_Process();
 
 
-
-
-
-
 /* 若一直没有收到高度数据，说明 User log
    * 没有成功开启（可能雷达启动慢漏掉了指令），周期性重发指令 */
   radar_data_t *p_radar = Radar_GetData();
+  if (!warmup_done) {
+    /* 开机/复位冷启动预热期内，自动清零雷达上电瞬态残余的跌倒标志 */
+    p_radar->is_fall = 0;
+  }
   static uint32_t last_log_retry_tick = 0;
   if (!p_radar->height_updated && (current_tick - last_log_retry_tick > 2000)) {
     last_log_retry_tick = current_tick;
@@ -105,6 +111,10 @@ void System_Yield(void) {
   static int empty_target_count = 0;
   LD2450_Data_t last_ld2450_data;
   if (LD2450_Get_Data(&last_ld2450_data)) {
+    /* 将 LD2450 三目标包与 LD6002C 多参数结构体同时送入端侧双通道 AI 跌倒引擎 */
+    (void)AI_FallEngine_Step(&last_ld2450_data, p_radar, current_tick);
+    const AI_FallState_t *p_ai_frame = AI_FallEngine_GetState();
+
     int best_idx = -1;
     for (int i = 0; i < 3; i++) {
       if (last_ld2450_data.target[i].is_valid) {
@@ -115,15 +125,25 @@ void System_Yield(void) {
 
     if (best_idx != -1) {
       empty_target_count = 0;
-      int cur_x = last_ld2450_data.target[best_idx].x;
-      int cur_y = last_ld2450_data.target[best_idx].y;
+      /* 融合 1024 粒子滤波后验质心与瞬时观测，兼顾多径虚影抑制与低延迟响应 */
+      int raw_x = last_ld2450_data.target[best_idx].x;
+      int raw_y = last_ld2450_data.target[best_idx].y;
+      int cur_x = (!is_first_frame && p_ai_frame->filtered_r_m > 0.15f)
+                      ? ((raw_x * 6 + (int)p_ai_frame->filtered_x_mm * 4) / 10)
+                      : raw_x;
+      int cur_y = (!is_first_frame && p_ai_frame->filtered_r_m > 0.15f)
+                      ? ((raw_y * 6 + (int)p_ai_frame->filtered_y_mm * 4) / 10)
+                      : raw_y;
       int cur_v = last_ld2450_data.target[best_idx].speed;
 
-      if (cur_v > 200 || cur_v < -200 ||
-          (!is_first_frame &&
-           (cur_x - history_x > 1100 || cur_x - history_x < -1100)) ||
-          (!is_first_frame &&
-           (cur_y - history_y > 8000 || cur_y - history_y < -8000))) {
+      /* 若已过开机预热期，且 PINN-CfC 判定为跌倒流形或出现超高速失衡冲击且非正常慢走/快走姿态，标记异常候选 */
+      if (warmup_done &&
+          (p_ai_frame->ld2450_ai_fall_triggered ||
+           ((cur_v > 210 || cur_v < -210 ||
+             (!is_first_frame &&
+              (cur_x - history_x > 1200 || cur_x - history_x < -1200))) &&
+            p_ai_frame->posture_class != AI_POSTURE_SLOW_WALK &&
+            p_ai_frame->posture_class != AI_POSTURE_FAST_TURN))) {
         anomaly_flag = 1;
       }
 
@@ -138,13 +158,19 @@ void System_Yield(void) {
           should_upload = 1;
         }
 
-        /* 计算横向速度 (X轴方向)，单位转换为 cm/s (X单位为mm, dt为ms) */
+        /* 优先采用径向多普勒速度与横向位移速度融合值，并融合 LD6002C 的 3D 速度 (单位: cm/s) */
         uint32_t dt = current_tick - last_valid_target_tick;
         if (dt > 0) {
-          upload_v = ((cur_x - history_x) * 100) / (int)dt;
+          int vx_cms = ((cur_x - history_x) * 100) / (int)dt;
+          int v60_cms = (int)(p_radar->speed_m_s * 100.0f);
+          int best_v = (abs_v > (vx_cms > 0 ? vx_cms : -vx_cms)) ? cur_v : vx_cms;
+          if (v60_cms > (best_v > 0 ? best_v : -best_v)) {
+            best_v = v60_cms;
+          }
+          upload_v = best_v;
         }
       } else {
-        upload_v = 0;
+        upload_v = cur_v;
       }
 
       is_first_frame = false;
@@ -176,12 +202,20 @@ void System_Yield(void) {
   }
 
   if (current_tick - last_valid_target_tick > 1500) {
-    history_x = 0;
-    history_y = 0;
-    upload_x = 0;
-    upload_y = 0;
-    upload_v = 0;
-    is_first_frame = true;
+    /* 若 LD2450 暂时无动态目标，但 LD6002C 实时 3D 点云仍在跟踪人体，自动用 LD6002C 的参数互补填充上传 */
+    if (p_radar->is_human && p_radar->height_updated &&
+        (current_tick - p_radar->last_pc_tick < 1500u)) {
+      upload_x = (int)(p_radar->pc_avg_x_m * 1000.0f);
+      upload_y = (int)((p_radar->pc_avg_z_m > 0.1f ? p_radar->pc_avg_z_m : p_radar->height_radar_m) * 1000.0f);
+      upload_v = (int)(p_radar->speed_m_s * 100.0f);
+    } else {
+      history_x = 0;
+      history_y = 0;
+      upload_x = 0;
+      upload_y = 0;
+      upload_v = 0;
+      is_first_frame = true;
+    }
   }
 
   /* 双雷达融合大招：LD6002C 判定静态很准但变 Y 慢，LD2450 侦测运动瞬间响应。
@@ -225,10 +259,12 @@ void System_Yield(void) {
         buzzer_toggle_count = 0;
         alarm_playing = 0;
         
-        // 报警 9 秒（18次翻转）后自动停止，并强制清除底层雷达跌倒状态，防止一直反复报警
+        // 报警 9 秒（18次翻转）后自动停止，并强制清除底层雷达跌倒状态与 AI 锁存，立即上报恢复正常状态
         p_radar->is_fall = 0;
         is_falling = 0;
         anomaly_flag = 0;
+        AI_FallEngine_ResetAlarm();
+        should_upload = 1;
       }
     }
   } else {
@@ -279,35 +315,66 @@ void System_Yield(void) {
     last_heartbeat_tick = current_tick;
   }
 
-  int fall_val = alarm.active ? 1 : 0;
+  /* 异构双雷达独立多参数 AI 并行决策合成：
+   * 通道 A (LD2450)：1024 粒子滤波 + 64点 STFT + PINN-CfC 液态神经网络识别跌倒 -> 111
+   * 通道 B (LD6002C)：三维点云多参数引擎（离地高度H下降、垂直坠落速率-dH/dt、三维速度V冲击、
+   *                   三维加速度、点云卧姿宽高比、低位静止确认，兼容 0x0E02）识别跌倒 -> 1
+   * 并行触发规则：任意一路识别出跌倒立即报警 (111 或 1)；两路同时识别出跌倒立即报警 (11)！ */
+  (void)AI_FallEngine_Step(NULL, p_radar, current_tick);
+  const AI_FallState_t *p_ai_state = AI_FallEngine_GetState();
 
   static uint32_t fall_111_start_tick = 0;
   static int fall_111_waiting = 0;
+  int fall_val = 0;
 
-  if (fall_val == 1 && anomaly_flag == 1) {
-    fall_val = 11;
+  if (!warmup_done) {
+    /* 开机/复位后前 5 秒为传感器与粒子滤波热机稳定期，强制清零一切跌倒误触发状态 */
+    anomaly_flag = 0;
     fall_111_waiting = 0;
-  } else if (fall_val == 0 && anomaly_flag == 1) {
-    if (fall_111_waiting == 0) {
-      fall_111_waiting = 1;
-      fall_111_start_tick = current_tick;
+    p_radar->is_fall = 0;
+    AI_FallEngine_ResetAlarm();
+    fall_val = 0;
+  } else {
+    fall_val = p_ai_state->combined_fall_code;
+    if (alarm.active && fall_val == 0) {
+      fall_val = 1;
+    } else if (alarm.active && fall_val == 111) {
+      fall_val = 11;
     }
-  } else if (anomaly_flag == 0) {
-    if (fall_111_waiting == 2) {
+
+    if (fall_val == 1 && anomaly_flag == 1) {
+      fall_val = 11;
       fall_111_waiting = 0;
+    } else if (fall_val == 0 && anomaly_flag == 1) {
+      if (fall_111_waiting == 0) {
+        fall_111_waiting = 1;
+        fall_111_start_tick = current_tick;
+      }
+    } else if (anomaly_flag == 0) {
+      if (fall_111_waiting == 2) {
+        fall_111_waiting = 0;
+      }
     }
-  }
 
-  if (fall_111_waiting == 1) {
-    if (current_tick - fall_111_start_tick >= 1800) {
-      fall_111_waiting = 2;
-    } else {
-      fall_val = 0;
+    if (fall_111_waiting == 1) {
+      if (current_tick - fall_111_start_tick >= 1800) {
+        /* 1.8 秒触地静止确认：若此时 PINN-CfC 识别到人在持续正常慢走(Class 0)，则拦截误报 */
+        if (p_ai_state->posture_class == AI_POSTURE_SLOW_WALK &&
+            (p_ai_state->filtered_v_ms > 0.35f || p_ai_state->filtered_v_ms < -0.35f)) {
+          anomaly_flag = 0;
+          fall_111_waiting = 0;
+          fall_val = 0;
+        } else {
+          fall_111_waiting = 2;
+        }
+      } else {
+        fall_val = 0;
+      }
     }
-  }
 
-  if (fall_111_waiting == 2) {
-    fall_val = 111;
+    if (fall_111_waiting == 2 && fall_val == 0) {
+      fall_val = 111;
+    }
   }
 
   static int prev_fall_val = 0;
@@ -345,12 +412,12 @@ void System_Yield(void) {
     oled_buf[16] = '\0';
     OLED_ShowString(3, 1, oled_buf);
 
-    // 第 4 行：若未连上4G，优先显示故障诊断信息；就绪后显示雷达高度参数
+    // 第 4 行：若未连上4G，优先显示故障诊断信息；就绪后显示 LD6002C 离地高度与移动速度
     if (g_4g_status != ML307R_STAT_NET_OK) {
       sprintf(oled_buf, "%-16s", g_4g_diag_info);
     } else {
-      sprintf(oled_buf, "T%04X L%d D%d", p_radar->last_height_type,
-              p_radar->last_height_len, (int)(p_radar->height_floor_m * 100));
+      sprintf(oled_buf, "H:%4.2fm V:%4.2fm", p_radar->height_floor_m,
+              p_radar->speed_m_s);
     }
     for (int i = (int)strlen(oled_buf); i < 16; i++)
       oled_buf[i] = ' ';
@@ -383,9 +450,10 @@ void hal_entry(void) {
   R_BSP_SoftwareDelay(100, BSP_DELAY_UNITS_MILLISECONDS);
   Buzzer_Off();
 
-  Radar_Init();     // 初始化雷达串口
-  FallAlarm_Init(); // 初始化跌倒报警状态机
-  LD2450_Init();    // 初始化 LD2450 雷达
+  Radar_Init();         // 初始化雷达串口
+  FallAlarm_Init();     // 初始化跌倒报警状态机
+  LD2450_Init();        // 初始化 LD2450 雷达
+  AI_FallEngine_Init(); // 初始化端侧 PINN-CfC 液态神经网络与 1024 粒子滤波引擎
   R_SCI_UART_Open(&g_uart_3_ctrl,
                   &g_uart_3_cfg); // 必须打开对应串口，否则收不到雷达数据
   g_last_ld2450_uart_tick = g_system_tick;
@@ -404,15 +472,22 @@ void hal_entry(void) {
     g_4g_ok = 0;
   }
 
+  /* 进入正式监控前再次清空开机初始化期间积累的瞬态标志，并开启 5 秒热机静默保护 */
+  anomaly_flag = 0;
+  is_falling = 0;
+  is_first_frame = true;
+  AI_FallEngine_ResetAlarm();
+  FallAlarm_Init();
+  g_ready_tick = g_system_tick;
   g_system_ready = 1;
 
   /* === 3. 立即呈现全场景实时监控界面 === */
   OLED_Clear();
   System_Yield(); // 立即执行首轮传感器采集并刷新 OLED 4行监控参数
 
-  /* 指向搭建好的轻量服务器 IP 和端口（对齐 MMCare 2.0.0 规范） */
-  const char *http_url = "182.254.135.92:8080/data?api_key=mmcare-demo-key-2026";
-  char json_buf[192];
+  /* 指向搭建好的轻量服务器 IP 和端口（上报完整跌倒触发码 1 / 11 / 111） */
+  const char *http_url = "182.254.135.92:8080/api/data";
+  char json_buf[224];
 
   while (1) {
     System_Yield(); // 每帧后台维护雷达和蜂鸣器
@@ -438,6 +513,8 @@ void hal_entry(void) {
         need_upload = true;
         fall_already_reported = 1;
       }
+    } else if (should_upload && (current_tick - last_upload_tick >= 800)) {
+      need_upload = true;
     } else if (current_tick - last_upload_tick >= 2500) {
       need_upload = true;
     }
@@ -450,22 +527,24 @@ void hal_entry(void) {
       if (g_4g_ok) {
         float current_temp = NTC_GetTemperature();
         radar_data_t *snap = Radar_GetData(); // 只取一次快照，保证同一帧数据一致
-        int temp_scaled = (int)(current_temp * 10.0f);
         int is_human = snap->is_human ? 1 : 0;
         int is_fall = (is_falling != 0) ? 1 : 0;
+        const char *pose_str = is_fall ? "falling" : (is_human ? "standing" : "away");
         int dist_cm = (int)upload_y;
         if (dist_cm < 0) dist_cm = 0;
 
         sprintf(json_buf,
-                "{\"device_id\":101,"
-                "\"temp\":%d,"
-                "\"human\":%d,"
+                "{\"device_id\":\"MM001\","
+                "\"temperature\":%.1f,"
+                "\"humidity\":%d,"
+                "\"distance\":%.2f,"
+                "\"motion_speed\":%d,"
+                "\"person\":%d,"
+                "\"pose\":\"%s\","
                 "\"fall\":%d,"
-                "\"dist\":%d,"
-                "\"x\":%d,"
-                "\"y\":%d,"
-                "\"v\":%d}",
-                temp_scaled, is_human, is_fall, dist_cm, (int)upload_x, (int)upload_y, (int)upload_v);
+                "\"fall_confidence\":%d}",
+                current_temp, is_falling, (float)dist_cm * 0.01f, (int)upload_v,
+                is_human, pose_str, is_fall, is_falling);
 
         if (ML307R_HttpPost(http_url, json_buf)) {
           g_4g_ok = 1;
@@ -484,8 +563,8 @@ void hal_entry(void) {
       }
     }
 
-    // 断网或未就绪状态下 (g_4g_ok == 0)，后台每隔 8 秒轻量化自动探测入网，确保主循环雷达流畅
-    if (!g_4g_ok && (current_tick - last_net_retry_tick >= 8000)) {
+    // 断网或未就绪状态下 (g_4g_ok == 0)，后台每隔 4 秒轻量化自动探测入网，确保主循环雷达流畅
+    if (!g_4g_ok && (current_tick - last_net_retry_tick >= 4000)) {
       last_net_retry_tick = current_tick;
       if (ML307R_CheckNetwork()) {
         g_4g_ok = 1;

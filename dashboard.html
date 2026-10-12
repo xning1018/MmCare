@@ -6,19 +6,19 @@
   <title>MMCare 智能康养监护终端 - 实时遥测大屏</title>
   <style>
     :root {
-      --bg-main: #0a0e17;
-      --bg-card: rgba(17, 24, 39, 0.85);
-      --bg-card-hover: rgba(31, 41, 55, 0.9);
-      --border-color: rgba(55, 65, 81, 0.6);
-      --border-accent: rgba(59, 130, 246, 0.5);
-      --text-main: #f3f4f6;
-      --text-muted: #9ca3af;
-      --accent-blue: #3b82f6;
+      --bg-main: #062224;
+      --bg-card: rgba(10, 48, 51, 0.78);
+      --bg-card-hover: rgba(15, 64, 67, 0.88);
+      --border-color: rgba(45, 212, 191, 0.28);
+      --border-accent: rgba(20, 184, 166, 0.68);
+      --text-main: #ecfdf5;
+      --text-muted: #84b8b3;
+      --accent-blue: #14b8a6;
       --accent-cyan: #06b6d4;
       --accent-emerald: #10b981;
       --accent-amber: #f59e0b;
       --accent-rose: #ef4444;
-      --glow-emerald: rgba(16, 185, 129, 0.25);
+      --glow-emerald: rgba(16, 185, 129, 0.28);
       --glow-rose: rgba(239, 68, 68, 0.35);
     }
 
@@ -35,19 +35,21 @@
       min-height: 100vh;
       overflow-x: hidden;
       background-image: 
-        radial-gradient(at 0% 0%, rgba(14, 165, 233, 0.12) 0px, transparent 50%),
-        radial-gradient(at 100% 100%, rgba(99, 102, 241, 0.1) 0px, transparent 50%);
+        radial-gradient(at 0% 0%, rgba(20, 184, 166, 0.28) 0px, transparent 55%),
+        radial-gradient(at 50% 25%, rgba(16, 185, 129, 0.18) 0px, transparent 60%),
+        radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.24) 0px, transparent 55%),
+        linear-gradient(160deg, #062224 0%, #092d29 50%, #072629 100%);
     }
 
     /* 顶部导航 */
     header {
-      background: rgba(15, 23, 42, 0.85);
+      background: rgba(7, 40, 42, 0.85);
       backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border-color);
       position: sticky;
       top: 0;
       z-index: 50;
-      padding: 12px 24px;
+      padding: 10px 24px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -58,18 +60,15 @@
     .brand-title {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
     }
 
     .logo-badge {
-      background: linear-gradient(135deg, #2563eb, #06b6d4);
-      color: #fff;
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-weight: 800;
-      letter-spacing: 1px;
-      font-size: 14px;
-      box-shadow: 0 0 15px rgba(37, 99, 235, 0.4);
+      height: 52px;
+      width: auto;
+      display: block;
+      object-fit: contain;
+      filter: drop-shadow(0 0 10px rgba(45, 212, 191, 0.35));
     }
 
     .brand-text h1 {
@@ -95,7 +94,7 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      background: rgba(30, 41, 59, 0.8);
+      background: rgba(12, 54, 58, 0.8);
       border: 1px solid var(--border-color);
       padding: 6px 14px;
       border-radius: 9999px;
@@ -123,9 +122,9 @@
     }
 
     .btn {
-      background: rgba(37, 99, 235, 0.2);
-      border: 1px solid rgba(59, 130, 246, 0.4);
-      color: #93c5fd;
+      background: rgba(20, 184, 166, 0.2);
+      border: 1px solid rgba(45, 212, 191, 0.45);
+      color: #99f6e4;
       padding: 6px 14px;
       border-radius: 8px;
       font-size: 13px;
@@ -134,8 +133,8 @@
     }
 
     .btn:hover {
-      background: rgba(37, 99, 235, 0.4);
-      border-color: #60a5fa;
+      background: rgba(16, 185, 129, 0.38);
+      border-color: #2dd4bf;
       color: #fff;
     }
 
@@ -253,10 +252,10 @@
       font-weight: 600;
     }
 
-    .badge-success { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+    .badge-success { background: rgba(16, 185, 129, 0.22); color: #34d399; }
     .badge-danger { background: rgba(239, 68, 68, 0.25); color: #f87171; }
     .badge-warning { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
-    .badge-info { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+    .badge-info { background: rgba(20, 184, 166, 0.22); color: #5eead4; }
 
     /* 主可视化两栏布局 */
     .dashboard-body {
@@ -299,9 +298,9 @@
       width: 100%;
       height: 100%;
       border-radius: 50%;
-      background: radial-gradient(circle, #0f1f33 0%, #080d1a 100%);
-      border: 2px solid rgba(14, 165, 233, 0.3);
-      box-shadow: 0 0 30px rgba(14, 165, 233, 0.15);
+      background: radial-gradient(circle, #0d3d40 0%, #051b1d 100%);
+      border: 2px solid rgba(45, 212, 191, 0.35);
+      box-shadow: 0 0 30px rgba(20, 184, 166, 0.18);
     }
 
     /* 历史图表与日志区 */
@@ -315,7 +314,7 @@
       width: 100%;
       height: 200px;
       border-radius: 8px;
-      background: rgba(10, 15, 29, 0.5);
+      background: rgba(6, 28, 30, 0.55);
     }
 
     /* 实时表格 */
@@ -335,7 +334,7 @@
     }
 
     th {
-      background: rgba(30, 41, 59, 0.9);
+      background: rgba(12, 52, 56, 0.92);
       color: var(--text-muted);
       padding: 8px 12px;
       position: sticky;
@@ -345,12 +344,12 @@
 
     td {
       padding: 8px 12px;
-      border-top: 1px solid rgba(55, 65, 81, 0.4);
-      color: #e5e7eb;
+      border-top: 1px solid rgba(45, 212, 191, 0.18);
+      color: #ecfdf5;
     }
 
     tr:nth-child(even) {
-      background: rgba(255, 255, 255, 0.02);
+      background: rgba(45, 212, 191, 0.03);
     }
 
     tr.highlight-fall {
@@ -363,7 +362,7 @@
       flex-wrap: wrap;
       align-items: center;
       gap: 12px;
-      background: rgba(15, 23, 42, 0.6);
+      background: rgba(8, 40, 43, 0.65);
       border: 1px solid var(--border-color);
       border-radius: 10px;
       padding: 10px 16px;
@@ -372,7 +371,7 @@
     }
 
     .config-bar input {
-      background: rgba(30, 41, 59, 0.8);
+      background: rgba(12, 54, 58, 0.8);
       border: 1px solid var(--border-color);
       color: #fff;
       padding: 4px 10px;
@@ -391,10 +390,10 @@
       height: 6px;
     }
     ::-webkit-scrollbar-track {
-      background: rgba(15, 23, 42, 0.5);
+      background: rgba(7, 36, 39, 0.5);
     }
     ::-webkit-scrollbar-thumb {
-      background: rgba(75, 85, 99, 0.6);
+      background: rgba(45, 212, 191, 0.4);
       border-radius: 3px;
     }
   </style>
@@ -404,7 +403,7 @@
   <!-- 顶部导航 -->
   <header>
     <div class="brand-title">
-      <div class="logo-badge">MMCARE</div>
+      <img class="logo-badge" src="data:image/webp;base64,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" alt="Mmcare">
       <div class="brand-text">
         <h1>智能康养监护终端 · 实时遥测大屏</h1>
         <p>基于瑞萨 RA MCU + 双毫米波雷达 + 4G Cat.1 蜂窝上云</p>
@@ -418,8 +417,9 @@
       </div>
       <div class="status-pill">
         <span>最后数据:</span>
-        <strong id="time-ago-text" style="color: #60a5fa;">0秒前</strong>
+        <strong id="time-ago-text" style="color: #2dd4bf;">0秒前</strong>
       </div>
+      <button class="btn" onclick="sendWechatPush(true)" style="border-color: rgba(45, 212, 191, 0.45); color: #5eead4;">📲 微信推送测试</button>
       <button class="btn btn-alert-test" onclick="toggleAudioAlert()">🔔 警报静音</button>
       <button class="btn" onclick="fetchLatestData(true)">🔄 立即刷新</button>
     </div>
@@ -431,8 +431,7 @@
       <div class="alarm-content">
         <div class="alarm-icon">🚨</div>
         <div>
-          <h2 style="font-size: 18px; font-weight: 800;">【紧急跌倒警报】毫米波雷达检测到长者疑似跌倒！</h2>
-          <p style="font-size: 13px; opacity: 0.9; margin-top: 2px;">双雷达交叉验证算法已触发，请立即与长者联系或前往现场确认！</p>
+          <h2 id="fall-banner-title" style="font-size: 18px; font-weight: 800; margin: 0;">【紧急跌倒警报】检测到长者跌倒！[触发代码: 111]</h2>
         </div>
       </div>
       <button class="btn" style="background: #fff; color: #b91c1c; font-weight: 700;" onclick="dismissFallAlert()">确认已知晓</button>
@@ -475,7 +474,7 @@
           <span class="badge badge-info" id="human-badge">有人</span>
         </div>
         <div class="card-value">
-          <span id="pose-text" style="color: #60a5fa;">站立 (Standing)</span>
+          <span id="pose-text" style="color: #2dd4bf;">站立 (Standing)</span>
         </div>
         <div class="card-subtext">
           <span id="human-detect-sub">LD2450 连续目标锁定</span>
@@ -546,7 +545,7 @@
 
         <div style="display: flex; gap: 16px; font-size: 12px; color: var(--text-muted); margin-top: 8px;">
           <div style="display: flex; align-items: center; gap: 6px;">
-            <div style="width: 10px; height: 10px; border-radius: 50%; background: #38bdf8;"></div>
+            <div style="width: 10px; height: 10px; border-radius: 50%; background: #2dd4bf;"></div>
             <span>当前人体位置</span>
           </div>
           <div style="display: flex; align-items: center; gap: 6px;">
@@ -562,7 +561,7 @@
           <h3 style="font-size: 15px; font-weight: 700; color: #fff;">环境温度与目标距离实时变化趋势</h3>
           <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
             <span style="color: #f59e0b;">● 橙线：温度 (℃)</span> &nbsp;&nbsp; 
-            <span style="color: #06b6d4;">● 蓝线：雷达距离 (m)</span>
+            <span style="color: #2dd4bf;">● 青绿线：雷达距离 (m)</span>
           </p>
         </div>
 
@@ -609,14 +608,19 @@
       </label>
       <label>
         轮询频率:
-        <select id="config-interval" style="background: #1e293b; color: #fff; border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 6px;" onchange="onConfigChange()">
+        <select id="config-interval" style="background: #0c363a; color: #fff; border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 6px;" onchange="onConfigChange()">
+          <option value="300" selected>0.3 秒 (闪电响应)</option>
           <option value="500">0.5 秒 (极限响应)</option>
-          <option value="800" selected>0.8 秒 (极速推荐)</option>
+          <option value="800">0.8 秒 (极速推荐)</option>
           <option value="1000">1 秒</option>
           <option value="2000">2 秒</option>
         </select>
       </label>
-      <span style="margin-left: auto; font-size: 12px; color: #6b7280;">MMCare 2.0.0 IoT Terminal Ready</span>
+      <label>
+        微信推送 Token:
+        <input type="text" id="config-pushplus-token" value="cedbac2162ac4dc99f0c583a5748c62e" style="width: 220px;" onchange="onConfigChange()">
+      </label>
+      <span style="margin-left: auto; font-size: 12px; color: #5eead4;">MMCare 2.0.0 IoT Terminal Ready</span>
     </div>
   </main>
 
@@ -624,11 +628,12 @@
     // 全局状态
     let serverBase = localStorage.getItem("mmcare_server_url") || "http://182.254.135.92:8080";
     let apiKey = localStorage.getItem("mmcare_api_key") || "mmcare-demo-key-2026";
-    let savedInterval = parseInt(localStorage.getItem("mmcare_poll_interval"));
-    let pollIntervalMs = (savedInterval && savedInterval <= 1000) ? savedInterval : 800;
+    let pushplusToken = localStorage.getItem("mmcare_pushplus_token") || "cedbac2162ac4dc99f0c583a5748c62e";
+    let pollIntervalMs = 300;
     localStorage.setItem("mmcare_poll_interval", pollIntervalMs);
     let pollTimer = null;
     let audioAlertEnabled = true;
+    let lastWechatPushTime = 0;
 
     // 内存数据缓存
     let historyPoints = []; // [{ time, temp, dist, fall, speed }]
@@ -636,6 +641,105 @@
     let currentFallState = false;
     let radarTarget = { dist: 4.5, angle: 0, speed: 0, isHuman: true, isFall: false };
     let radarScanAngle = 0;
+
+    // 解析跌倒触发代码 (1 / 11 / 111)
+    function getFallCodeMeta(code) {
+      const num = Number(code);
+      if (num === 111) {
+        return { code: 111 };
+      }
+      if (num === 1) {
+        return { code: 1 };
+      }
+      return { code: 11 };
+    }
+
+    // PushPlus 微信 + QQ邮箱实时通知发送函数（0ms 零延迟并发直推）
+    async function sendWechatPush(isTest = false, fallInfo = {}) {
+      const token = (document.getElementById("config-pushplus-token")?.value || pushplusToken || "").trim();
+      if (!token) {
+        if (isTest) alert("请先在底部配置栏填入 PushPlus 微信推送 Token！");
+        return;
+      }
+
+      const nowStr = fallInfo.time || new Date().toLocaleString("zh-CN", { hour12: false });
+      const devId = fallInfo.deviceId || document.getElementById("device-id-badge")?.innerText || "MM001";
+      const tempStr = fallInfo.temp || document.getElementById("temp-val")?.innerText || "--";
+      const distStr = fallInfo.dist || document.getElementById("dist-val")?.innerText || "--";
+      const speedStr = fallInfo.speed || document.getElementById("speed-val")?.innerText || "--";
+      const meta = getFallCodeMeta(fallInfo.fallCode || 11);
+
+      const title = isTest
+        ? "✅【心安守护】微信与QQ邮箱告警测试"
+        : `🚨【紧急跌倒警报】终端 ${devId} 检测到跌倒！[触发代码: ${meta.code}]`;
+
+      const content = `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Microsoft YaHei', sans-serif; border-radius: 12px; overflow: hidden; border: 2px solid ${isTest ? '#14b8a6' : '#ef4444'}; background: #0a2e32; color: #f0fdfa; padding: 16px;">
+          <h3 style="margin: 0 0 10px 0; color: ${isTest ? '#2dd4bf' : '#f87171'}; font-size: 18px;">
+            ${isTest ? '🔔 微信与QQ邮箱实时告警通道连接正常' : `🚨 检测到长者跌倒！[触发代码: ${meta.code}]`}
+          </h3>
+          <p style="margin: 6px 0; font-size: 14px; color: #ccfbf1;"><strong>告警终端：</strong>${devId}（浴室毫米波监护节点）</p>
+          <p style="margin: 6px 0; font-size: 14px; color: #ccfbf1;"><strong>触发时间：</strong>${nowStr}</p>
+          <p style="margin: 6px 0; font-size: 14px; color: #ccfbf1;"><strong>当前状态：</strong><span style="color: ${isTest ? '#34d399' : '#ef4444'}; font-weight: bold;">${isTest ? '通道测试 (正常守护中)' : `跌倒警报 [触发代码: ${meta.code}]`}</span></p>
+          <p style="margin: 6px 0; font-size: 14px; color: #ccfbf1;"><strong>目标距离：</strong>${distStr} m &nbsp;|&nbsp; <strong>瞬时速度：</strong>${speedStr} cm/s</p>
+          <p style="margin: 6px 0 14px 0; font-size: 14px; color: #ccfbf1;"><strong>环境温度：</strong>${tempStr} ℃</p>
+          <a href="http://182.254.135.92:8000" style="display: inline-block; background: ${isTest ? '#14b8a6' : '#ef4444'}; color: #ffffff; text-decoration: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; font-size: 14px;">👉 点击打开实时监控大屏</a>
+        </div>
+      `;
+
+      const pushNonce = `${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+      try {
+        // 0ms 零延迟同时并发请求：微信公众号 (0.3s极速直达) + QQ邮箱强弹窗 (channel: "mail")
+        const [wechatRes, mailRes] = await Promise.allSettled([
+          fetch("https://www.pushplus.plus/send", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              token: token,
+              title: title,
+              content: content + `<!-- wechat-${pushNonce} -->`,
+              template: "html",
+              channel: "wechat"
+            })
+          }),
+          fetch("https://www.pushplus.plus/send", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              token: token,
+              title: title + " [弹窗提醒]",
+              content: content + `<!-- mail-${pushNonce} -->`,
+              template: "html",
+              channel: "mail"
+            })
+          })
+        ]);
+
+        let resJson = { code: 200 };
+        if (mailRes.status === "fulfilled") {
+          resJson = await mailRes.value.json();
+        } else if (wechatRes.status === "fulfilled") {
+          resJson = await wechatRes.value.json();
+        }
+
+        if (resJson.code === 200) {
+          console.log("[PushPlus] 0ms 并发双通道推送成功:", resJson);
+          if (isTest) {
+            alert("✅ 0ms 极速双通道测试已发出！\n请查看您的微信及 QQ 邮箱 (2532083925@qq.com) 弹窗！");
+          }
+        } else {
+          console.warn("[PushPlus] 推送返回异常:", resJson);
+          if (isTest) {
+            alert(`⚠️ 推送返回提示：${resJson.msg || JSON.stringify(resJson)}`);
+          }
+        }
+      } catch (err) {
+        console.error("[PushPlus] 请求失败:", err);
+        if (isTest) {
+          alert("❌ 网络请求失败，请检查网络连接：" + err.message);
+        }
+      }
+    }
 
     // 音频蜂鸣器模拟
     let audioCtx = null;
@@ -669,9 +773,11 @@
       serverBase = document.getElementById("config-server-url").value.trim().replace(/\/$/, "");
       apiKey = document.getElementById("config-api-key").value.trim();
       pollIntervalMs = parseInt(document.getElementById("config-interval").value);
+      pushplusToken = document.getElementById("config-pushplus-token").value.trim();
       localStorage.setItem("mmcare_server_url", serverBase);
       localStorage.setItem("mmcare_api_key", apiKey);
       localStorage.setItem("mmcare_poll_interval", pollIntervalMs);
+      localStorage.setItem("mmcare_pushplus_token", pushplusToken);
       restartPolling();
     }
 
@@ -760,41 +866,79 @@
       const speed = typeof data.motion_speed === "number" ? data.motion_speed.toFixed(1) : "0.0";
       document.getElementById("speed-val").innerText = (speed > 0 ? "+" : "") + speed;
 
-      // 跌倒判断（精准对齐单片机逻辑：仅根据单片机实际触发的报警而报警）
+      // 跌倒判断与触发码解析 (1 = 仅LD6002C, 11 = 双雷达同时, 111 = 仅LD2450)
       const rawFall = data.fall;
-      // 1. 如果数据中包含单片机报警值 1, 11 或 111：
-      let isFall = (rawFall === 1 || rawFall === 11 || rawFall === 111 || 
-                    rawFall === "1" || rawFall === "11" || rawFall === "111");
+      const rawHumCode = Number(data.humidity);
+      const rawConfCode = Number(data.fall_confidence);
+      let fallCode = 0;
+
+      // 1. 直接从实时数据提取单片机触发码 1, 11 或 111
+      if (rawFall === 1 || rawFall === 11 || rawFall === 111 ||
+          rawFall === "1" || rawFall === "11" || rawFall === "111") {
+        fallCode = Number(rawFall);
+      } else if (rawHumCode === 1 || rawHumCode === 11 || rawHumCode === 111) {
+        fallCode = rawHumCode;
+      } else if (rawConfCode === 1 || rawConfCode === 11 || rawConfCode === 111) {
+        fallCode = rawConfCode;
+      }
 
       // 2. 联动单片机真实上报的硬件跌倒事件（过滤掉服务端生成的 virtual 模拟事件，只认单片机硬件 source: radar）
-      if (!isFall && fallEvents && fallEvents.length > 0) {
-        const radarFall = fallEvents.find(e => e.source === "radar");
+      if (fallCode === 0 && fallEvents && fallEvents.length > 0) {
+        const radarFall = fallEvents.find(e => e.source === "radar" && !e.handled);
         if (radarFall && radarFall.ts) {
           const refTime = serverTimeStr ? new Date(serverTimeStr.replace(/-/g, "/")).getTime() : Date.now();
           const eventTime = new Date(radarFall.ts.replace(/-/g, "/")).getTime();
           const diffSec = (refTime - eventTime) / 1000;
-          // 如果单片机硬件跌倒事件发生在最近 25 秒内（单片机9秒声光报警 + 网络上传延时）：
-          if (!isNaN(diffSec) && diffSec >= -5 && diffSec <= 25) {
-            isFall = true;
+          // 如果单片机硬件跌倒事件发生在最近 7 秒内：
+          if (!isNaN(diffSec) && diffSec >= -5 && diffSec <= 7) {
+            const evConf = Number(radarFall.confidence);
+            fallCode = (evConf === 1 || evConf === 11 || evConf === 111) ? evConf : 11;
           }
         }
       }
 
+      const isFall = (fallCode !== 0);
+      const fallMeta = isFall ? getFallCodeMeta(fallCode) : null;
+
+      // 同步修正姿态显示（防止服务端虚拟 pose 字段在未跌倒时误显示为跌倒）
+      const effectivePose = isFall ? "falling" : ((pose === "falling") ? (isHuman ? "standing" : "away") : pose);
+      document.getElementById("pose-text").innerText = poseMap[effectivePose] || effectivePose;
+
       const fallBadge = document.getElementById("fall-badge");
       const fallStatusText = document.getElementById("fall-status-text");
+      const fallSubtext = document.getElementById("fall-subtext");
       const fallBanner = document.getElementById("fall-alarm-banner");
+      const fallBannerTitle = document.getElementById("fall-banner-title");
       const fallCard = document.getElementById("card-fall");
 
-      if (isFall) {
+      if (isFall && fallMeta) {
         fallBadge.className = "badge badge-danger";
-        fallBadge.innerText = "🚨 跌倒警报";
-        fallStatusText.innerText = "检测到跌倒！";
+        fallBadge.innerText = `🚨 跌倒 [${fallMeta.code}]`;
+        fallStatusText.innerText = `跌倒! [触发代码: ${fallMeta.code}]`;
         fallStatusText.style.color = "#ef4444";
+        if (fallSubtext) {
+          fallSubtext.innerHTML = `<span style="color: #fca5a5; font-weight: 600;">触发代码: ${fallMeta.code}</span>`;
+        }
+        if (fallBannerTitle) {
+          fallBannerTitle.innerText = `【紧急跌倒警报】检测到长者跌倒！[触发代码: ${fallMeta.code}]`;
+        }
         fallBanner.style.display = "flex";
         fallCard.style.borderColor = "#ef4444";
         fallCard.style.boxShadow = "0 0 15px rgba(239, 68, 68, 0.4)";
         if (!currentFallState) {
           playBeep(920, 0.5); // 首次触发播放警报
+          const nowMs = Date.now();
+          if (nowMs - lastWechatPushTime > 7000) {
+            lastWechatPushTime = nowMs;
+            sendWechatPush(false, {
+              time: ts,
+              temp: temp,
+              dist: dist,
+              speed: speed,
+              fallCode: fallMeta.code,
+              deviceId: data.device_id || "MM001"
+            });
+          }
         }
         currentFallState = true;
       } else {
@@ -802,6 +946,9 @@
         fallBadge.innerText = "安全";
         fallStatusText.innerText = "正常";
         fallStatusText.style.color = "#34d399";
+        if (fallSubtext) {
+          fallSubtext.innerHTML = `<span>双雷达交叉验证算法持续监测</span>`;
+        }
         fallBanner.style.display = "none";
         fallCard.style.borderColor = "var(--border-color)";
         fallCard.style.boxShadow = "none";
@@ -824,7 +971,8 @@
           dist: parseFloat(dist) || 0,
           speed: parseFloat(speed) || 0,
           fall: isFall,
-          pose: poseMap[pose] || pose,
+          fallCode: fallCode,
+          pose: poseMap[effectivePose] || effectivePose,
           human: isHuman
         });
 
@@ -840,6 +988,12 @@
       const tr = document.createElement("tr");
       if (item.fall) tr.className = "highlight-fall";
 
+      let fallCellHtml = "<span style='color: #34d399;'>正常</span>";
+      if (item.fall) {
+        const meta = getFallCodeMeta(item.fallCode || 11);
+        fallCellHtml = `<span style='color: #ef4444; font-weight: 700;'>🚨 跌倒 [触发代码: ${meta.code}]</span>`;
+      }
+
       tr.innerHTML = `
         <td>${item.time}</td>
         <td>${item.temp} ℃</td>
@@ -847,7 +1001,7 @@
         <td>${item.speed} cm/s</td>
         <td>${item.human ? "👤 有人" : "⚪ 无人"}</td>
         <td>${item.pose}</td>
-        <td>${item.fall ? "<span style='color: #ef4444; font-weight: 700;'>🚨 跌倒报警</span>" : "<span style='color: #34d399;'>正常</span>"}</td>
+        <td>${fallCellHtml}</td>
       `;
 
       tbody.insertBefore(tr, tbody.firstChild);
@@ -877,7 +1031,7 @@
         if (secs > 15) {
           document.getElementById("time-ago-text").style.color = "#ef4444";
         } else {
-          document.getElementById("time-ago-text").style.color = "#60a5fa";
+          document.getElementById("time-ago-text").style.color = "#2dd4bf";
         }
       }
     }, 1000);
@@ -901,19 +1055,19 @@
       radarCtx.lineWidth = 1;
       for (let i = 1; i <= 4; i++) {
         const r = (maxR / 4) * i;
-        radarCtx.strokeStyle = "rgba(14, 165, 233, 0.25)";
+        radarCtx.strokeStyle = "rgba(45, 212, 191, 0.28)";
         radarCtx.beginPath();
         radarCtx.arc(cx, cy, r, 0, Math.PI * 2);
         radarCtx.stroke();
 
         // 刻度文字
-        radarCtx.fillStyle = "rgba(14, 165, 233, 0.6)";
+        radarCtx.fillStyle = "rgba(94, 234, 212, 0.65)";
         radarCtx.font = "10px sans-serif";
         radarCtx.fillText(`${i * 2}m`, cx + 4, cy - r + 12);
       }
 
       // 2. 十字准线与角度虚线
-      radarCtx.strokeStyle = "rgba(14, 165, 233, 0.2)";
+      radarCtx.strokeStyle = "rgba(45, 212, 191, 0.22)";
       radarCtx.beginPath();
       radarCtx.moveTo(cx - maxR, cy);
       radarCtx.lineTo(cx + maxR, cy);
@@ -928,8 +1082,8 @@
       radarCtx.rotate(radarScanAngle);
 
       const grad = radarCtx.createRadialGradient(0, 0, 0, 0, 0, maxR);
-      grad.addColorStop(0, "rgba(6, 182, 212, 0.4)");
-      grad.addColorStop(1, "rgba(6, 182, 212, 0)");
+      grad.addColorStop(0, "rgba(16, 185, 129, 0.45)");
+      grad.addColorStop(1, "rgba(20, 184, 166, 0)");
       radarCtx.fillStyle = grad;
 
       radarCtx.beginPath();
@@ -953,14 +1107,14 @@
         radarCtx.arc(tx, ty, 8 + pulse * 14, 0, Math.PI * 2);
         radarCtx.strokeStyle = radarTarget.isFall 
           ? `rgba(239, 68, 68, ${1 - pulse})` 
-          : `rgba(56, 189, 248, ${1 - pulse})`;
+          : `rgba(45, 212, 191, ${1 - pulse})`;
         radarCtx.lineWidth = 2;
         radarCtx.stroke();
 
         // 核心亮点
         radarCtx.beginPath();
         radarCtx.arc(tx, ty, 6, 0, Math.PI * 2);
-        radarCtx.fillStyle = radarTarget.isFall ? "#ef4444" : "#38bdf8";
+        radarCtx.fillStyle = radarTarget.isFall ? "#ef4444" : "#2dd4bf";
         radarCtx.fill();
         radarCtx.strokeStyle = "#fff";
         radarCtx.lineWidth = 1.5;
@@ -987,7 +1141,7 @@
       chartCtx.clearRect(0, 0, w, h);
 
       if (historyPoints.length < 2) {
-        chartCtx.fillStyle = "#6b7280";
+        chartCtx.fillStyle = "#84b8b3";
         chartCtx.font = "12px sans-serif";
         chartCtx.fillText("正在累积实时数据流...", 20, 30);
         return;
@@ -998,7 +1152,7 @@
       const plotH = h - padding * 2;
 
       // 绘制背景网格线
-      chartCtx.strokeStyle = "rgba(55, 65, 81, 0.4)";
+      chartCtx.strokeStyle = "rgba(45, 212, 191, 0.18)";
       chartCtx.lineWidth = 1;
       for (let i = 0; i <= 3; i++) {
         const y = padding + (plotH / 3) * i;
@@ -1024,9 +1178,9 @@
       });
       chartCtx.stroke();
 
-      // 2. 绘制距离曲线 (蓝线，范围 0 - 8 米)
+      // 2. 绘制距离曲线 (青绿线，范围 0 - 8 米)
       chartCtx.beginPath();
-      chartCtx.strokeStyle = "#06b6d4";
+      chartCtx.strokeStyle = "#2dd4bf";
       chartCtx.lineWidth = 2;
       historyPoints.forEach((p, idx) => {
         const x = padding + idx * stepX;
@@ -1045,6 +1199,9 @@
       document.getElementById("config-server-url").value = serverBase;
       document.getElementById("config-api-key").value = apiKey;
       document.getElementById("config-interval").value = pollIntervalMs;
+      if (document.getElementById("config-pushplus-token")) {
+        document.getElementById("config-pushplus-token").value = pushplusToken;
+      }
 
       // 启动雷达扫描动画
       drawRadar();

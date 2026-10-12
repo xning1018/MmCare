@@ -57,8 +57,10 @@ bool ML307R_SendCmd(const char *cmd, const char *expected_reply,
 
   uint32_t elapsed = 0;
   while (elapsed < timeout_ms) {
-    if (strstr((const char *)g_rx_buf, expected_reply) != NULL)
+    if (strstr((const char *)g_rx_buf, expected_reply) != NULL) {
+      R_BSP_SoftwareDelay(20, BSP_DELAY_UNITS_MILLISECONDS);
       return true;
+    }
     R_BSP_SoftwareDelay(10, BSP_DELAY_UNITS_MILLISECONDS);
     System_Yield();
     elapsed += 10;

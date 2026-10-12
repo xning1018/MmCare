@@ -315,7 +315,7 @@
           </ArmAdsMisc>
           <Cads>
             <interw>1</interw>
-            <Optim>6</Optim>
+            <Optim>7</Optim>
             <oTime>0</oTime>
             <SplitLS>0</SplitLS>
             <OneElfS>1</OneElfS>
@@ -517,6 +517,21 @@
               <FileName>light_sensor.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\API\light_sensor.h</FilePath>
+            </File>
+            <File>
+              <FileName>ai_fall_engine.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\API\ai_fall_engine.c</FilePath>
+            </File>
+            <File>
+              <FileName>ai_fall_engine.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\API\ai_fall_engine.h</FilePath>
+            </File>
+            <File>
+              <FileName>ai_weights.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\API\ai_weights.h</FilePath>
             </File>
           </Files>
         </Group>

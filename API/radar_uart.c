@@ -1,5 +1,14 @@
 #include "radar_uart.h"
+#include <math.h>
 #include <string.h>
+
+extern volatile uint32_t g_system_tick;
+static uint32_t s_last_pc_valid_tick = 0;
+static float s_prev_pc_x = 0.0f;
+static float s_prev_pc_y = 0.0f;
+static float s_prev_pc_z = 0.0f;
+static bool s_has_prev_pc = false;
+static float s_adaptive_mount_h = RADAR_MOUNT_HEIGHT; /* 自适应安装挂高基线 (无需死板限定 2.2m) */
 
 static volatile uint8_t s_rx_buf[RADAR_RX_BUF_SIZE];
 static volatile uint32_t s_rx_write = 0;
@@ -112,55 +121,168 @@ static void _process_frame(const tf_frame_t *f) {
     s_radar_data.last_height_type = 0x0A08u;
     s_radar_data.last_height_len = f->len;
     s_radar_data.height_updated = true; /* 只要收到点云，说明 User log 已开启 */
+    uint32_t now_tick = g_system_tick;
+
     if (f->len >= 4u) {
       int32_t target_num = 0;
       memcpy(&target_num, f->data, 4);
 
-      if (target_num > 0) {
-        /* 结构: num(4) + [id(4) + x(4) + y(4) + z(4) + speed(4)]... */
-        /* 限制目标解析个数，防止 target_num 字段损坏引起越界 */
-        uint32_t max_targets_in_frame = (f->len - 4u) / 20u;
+      if (target_num > 0 && f->len >= 20u) {
+        /* 兼容 20字节/点 [id(4)+x(4)+y(4)+z(4)+speed(4)] 与 16字节/点 [id(4)+x(4)+y(4)+z(4)] */
+        uint32_t stride = 20u;
+        if ((f->len - 4u) % 20u != 0u && (f->len - 4u) % 16u == 0u) {
+          stride = 16u;
+        }
+        uint32_t max_targets_in_frame = (f->len - 4u) / stride;
         if ((uint32_t)target_num > max_targets_in_frame) {
           target_num = (int32_t)max_targets_in_frame;
         }
 
         if (target_num > 0) {
-          float min_y_point = 999.0f;
-          bool found_valid = false;
+          float sum_x = 0.0f;
+          float sum_y = 0.0f;
+          float sum_z = 0.0f;
+          float max_speed = 0.0f;
+          float min_x = 99.0f, max_x = -99.0f;
+          float min_y = 99.0f, max_y = -99.0f;
+          float min_z = 99.0f, max_z = -99.0f;
+          int32_t valid_cnt = 0;
 
-          /* 遍历所有目标点，找出 Y
-           * 轴坐标最小（即离雷达最近、离地面最高，如人的头部）的目标 */
+          /* 遍历所有目标点，计算人体点云质心坐标 (avg_x, avg_y, avg_z) 与空间包络跨度 */
           for (int32_t i = 0; i < target_num; i++) {
+            uint32_t base_off = 4u + (uint32_t)i * stride;
+            float x_temp = 0.0f;
             float y_temp = 0.0f;
-            /* 每个目标占 20 字节。第 i 个目标的 Y 坐标在偏移 4 + i*20 + 8 (id
-             * 4B + x 4B) = 12 + i*20 处 */
-            memcpy(&y_temp, &f->data[12 + i * 20], 4);
+            float z_temp = 0.0f;
+            float s_temp = 0.0f;
+            memcpy(&x_temp, &f->data[base_off + 4u], 4);
+            memcpy(&y_temp, &f->data[base_off + 8u], 4);
+            memcpy(&z_temp, &f->data[base_off + 12u], 4);
 
+            if (isnan(x_temp) || isnan(y_temp) || isnan(z_temp))
+              continue;
+            if (x_temp < -10.0f || x_temp > 10.0f || z_temp < -10.0f || z_temp > 10.0f)
+              continue;
             if (y_temp < 0.0f)
               y_temp = -y_temp;
             if (y_temp > RADAR_HEIGHT_RAW_MAX)
               y_temp = RADAR_HEIGHT_RAW_MAX;
 
-            if (y_temp < min_y_point) {
-              min_y_point = y_temp;
-              found_valid = true;
+            sum_x += x_temp;
+            sum_y += y_temp;
+            sum_z += z_temp;
+            if (x_temp < min_x) min_x = x_temp;
+            if (x_temp > max_x) max_x = x_temp;
+            if (y_temp < min_y) min_y = y_temp;
+            if (y_temp > max_y) max_y = y_temp;
+            if (z_temp < min_z) min_z = z_temp;
+            if (z_temp > max_z) max_z = z_temp;
+            valid_cnt++;
+
+            if (stride >= 20u) {
+              memcpy(&s_temp, &f->data[base_off + 16u], 4);
+              s_temp = fabsf(s_temp);
+              if (!isnan(s_temp) && s_temp <= 9.99f && s_temp > max_speed) {
+                max_speed = s_temp;
+              }
             }
           }
 
-          if (found_valid) {
-            s_radar_data.height_radar_m = min_y_point;
-            s_radar_data.height_floor_m = RADAR_MOUNT_HEIGHT - min_y_point;
+          if (valid_cnt > 0) {
+            float avg_x = sum_x / (float)valid_cnt;
+            float avg_y = sum_y / (float)valid_cnt;
+            float avg_z = sum_z / (float)valid_cnt;
+
+            /* 在线自适应安装高度包络：若实际测量距离超过默认挂高，自动向上扩展挂高基准 */
+            if (avg_y + 0.15f > s_adaptive_mount_h && avg_y < 4.5f) {
+              s_adaptive_mount_h = avg_y + 0.15f;
+            }
+            s_radar_data.height_radar_m = avg_y;
+            s_radar_data.height_floor_m = s_adaptive_mount_h - avg_y;
             if (s_radar_data.height_floor_m < 0.0f)
               s_radar_data.height_floor_m = 0.0f;
+
+            s_radar_data.pc_avg_x_m = avg_x;
+            s_radar_data.pc_avg_z_m = avg_z;
+            s_radar_data.pc_point_cnt = (uint16_t)valid_cnt;
+            s_radar_data.pc_span_vert_m = (max_y >= min_y) ? (max_y - min_y) : 0.0f;
+            float sx = (max_x >= min_x) ? (max_x - min_x) : 0.0f;
+            float sz = (max_z >= min_z) ? (max_z - min_z) : 0.0f;
+            s_radar_data.pc_span_horiz_m = sqrtf(sx * sx + sz * sz);
+            s_radar_data.last_pc_tick = now_tick;
+
+            float prev_speed = s_radar_data.speed_m_s;
+            float calc_speed = max_speed;
+
+            /* 若 LD6002C 固件的 speed 字段固定填 0，则直接由 LD6002C 3D 点云质心位移计算瞬时移动速度 (m/s) */
+            if (calc_speed < 0.01f) {
+              if (s_has_prev_pc) {
+                uint32_t dt_ms = now_tick - s_last_pc_valid_tick;
+                float dx = avg_x - s_prev_pc_x;
+                float dy = avg_y - s_prev_pc_y;
+                float dz = avg_z - s_prev_pc_z;
+                float dist_3d = sqrtf(dx * dx + dy * dy + dz * dz);
+
+                if (dist_3d >= 0.002f && dt_ms > 0u) {
+                  uint32_t eff_dt = (dt_ms > 1000u) ? 500u : ((dt_ms < 50u) ? 50u : dt_ms);
+                  calc_speed = (dist_3d * 1000.0f) / (float)eff_dt;
+                  if (calc_speed > 9.99f)
+                    calc_speed = 9.99f;
+                  /* 计算垂直向下跌落速度 pc_v_drop_ms (avg_y 增大代表离地高度 H 减小即向下坠落) */
+                  s_radar_data.pc_v_drop_ms = (dy * 1000.0f) / (float)eff_dt;
+                  s_radar_data.pc_acc_3d_ms2 = ((calc_speed - prev_speed) * 1000.0f) / (float)eff_dt;
+                  s_prev_pc_x = avg_x;
+                  s_prev_pc_y = avg_y;
+                  s_prev_pc_z = avg_z;
+                  s_last_pc_valid_tick = now_tick;
+                  s_radar_data.speed_m_s = calc_speed;
+                } else if (dt_ms >= 1000u) {
+                  /* 超过 1000ms 坐标无位移，速度归零 */
+                  s_last_pc_valid_tick = now_tick;
+                  s_radar_data.speed_m_s = 0.0f;
+                  s_radar_data.pc_v_drop_ms = 0.0f;
+                  s_radar_data.pc_acc_3d_ms2 = 0.0f;
+                }
+              } else {
+                s_prev_pc_x = avg_x;
+                s_prev_pc_y = avg_y;
+                s_prev_pc_z = avg_z;
+                s_has_prev_pc = true;
+                s_last_pc_valid_tick = now_tick;
+              }
+            } else {
+              /* 硬件原生 speed 字段非 0，直接采用并计算垂直坠落速度与加速度 */
+              if (s_has_prev_pc) {
+                uint32_t dt_ms = now_tick - s_last_pc_valid_tick;
+                uint32_t eff_dt = (dt_ms > 1000u) ? 500u : ((dt_ms < 50u) ? 50u : dt_ms);
+                s_radar_data.pc_v_drop_ms = ((avg_y - s_prev_pc_y) * 1000.0f) / (float)eff_dt;
+                s_radar_data.pc_acc_3d_ms2 = ((calc_speed - prev_speed) * 1000.0f) / (float)eff_dt;
+              }
+              s_prev_pc_x = avg_x;
+              s_prev_pc_y = avg_y;
+              s_prev_pc_z = avg_z;
+              s_has_prev_pc = true;
+              s_last_pc_valid_tick = now_tick;
+              s_radar_data.speed_m_s = calc_speed;
+            }
           }
         }
       } else {
-        /* 无目标点时，若有人则保持上次高度，否则重置为0（人消失了） */
+        /* 关键修复：LD6002C 在有效点云帧之间会夹杂大量 target_num=0 的空帧。
+         * 不能一收到空帧就立刻把 speed_m_s 清零（否则 500ms 刷新的 OLED 永远只看到 0.00）。
+         * 只有当超过 1000ms 没有收到任何有效点云位移，或判定无人时，才将速度归零。 */
         if (s_radar_data.is_human == 0u) {
           s_radar_data.height_radar_m = 0.0f;
           s_radar_data.height_floor_m = 0.0f;
+          s_radar_data.speed_m_s = 0.0f;
+          s_radar_data.pc_v_drop_ms = 0.0f;
+          s_radar_data.pc_acc_3d_ms2 = 0.0f;
+          s_has_prev_pc = false;
+        } else if (now_tick - s_last_pc_valid_tick > 1000u) {
+          s_radar_data.speed_m_s = 0.0f;
+          s_radar_data.pc_v_drop_ms = 0.0f;
+          s_radar_data.pc_acc_3d_ms2 = 0.0f;
         }
-        /* 有人但无目标点时保持上次值，不更新 */
       }
     }
     break;

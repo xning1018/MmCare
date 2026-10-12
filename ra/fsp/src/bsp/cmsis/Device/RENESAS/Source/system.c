@@ -364,7 +364,8 @@ void SystemInit (void)
  #if !BSP_TZ_NONSECURE_BUILD
 
     /* Perform RTC reset sequence to avoid unintended operation. */
-    R_BSP_Init_RTC();
+
+R_BSP_Init_RTC();
  #endif
 #endif
 

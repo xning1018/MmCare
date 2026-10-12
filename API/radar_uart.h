@@ -49,12 +49,22 @@ typedef struct {
   bool valid;
 } tf_frame_t;
 
-/* 雷达业务数据 */
+/* 雷达业务数据 (含 LD6002C 完整 3D 点云多参数特征) */
 typedef struct {
-  float height_radar_m;
-  float height_floor_m;
-  uint8_t is_fall;
-  uint8_t is_human;
+  float height_radar_m;   /* 质心距雷达垂直距离 (m) */
+  float height_floor_m;   /* 质心离地高度 H (m) */
+  float speed_m_s;        /* 3D 点云质心移动速度 V (m/s) */
+  float pc_avg_x_m;       /* 3D 点云质心横向坐标 X (m) */
+  float pc_avg_z_m;       /* 3D 点云质心前向距离 Z (m) */
+  float pc_v_drop_ms;     /* 质心垂直向地面跌落速度 -dH/dt (m/s, 正值表示向下坠落) */
+  float pc_acc_3d_ms2;    /* 3D 点云运动加速度 (m/s^2) */
+  float pc_span_vert_m;   /* 3D 点云垂直高度跨度 (m) */
+  float pc_span_horiz_m;  /* 3D 点云水平展开跨度 (m) */
+  uint16_t pc_point_cnt;  /* 当前有效 3D 点云数量 */
+  uint32_t last_pc_tick;  /* 最近一次有效 3D 点云更新的系统时基 (ms) */
+
+  uint8_t is_fall;        /* 0x0E02 原生跌倒状态位 */
+  uint8_t is_human;       /* 0x0F09 有人状态位 */
   uint32_t frame_count;
   bool fall_updated;
   bool presence_updated;
