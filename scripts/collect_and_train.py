@@ -39,7 +39,7 @@ WEIGHTS_HEADER_PATH = os.path.join("API", "ai_weights.h")
 
 INPUT_DIM = 16
 HIDDEN_DIM = 32
-NUM_CLASSES = 4  # 0: 慢走, 1: 快走/转身, 2: 弯腰/下蹲, 3: 跌倒报警
+NUM_CLASSES = 3  # 0: 正常(含慢走/站立/轻微转身/洗浴微动), 1: 弯腰/下蹲/坐下, 2: 跌倒报警
 
 
 def play_beep(freq=880, duration_ms=200):
@@ -51,14 +51,22 @@ def play_beep(freq=880, duration_ms=200):
 
 
 def fetch_latest_reading():
-    """从云服务器获取最新一帧 4G 实时上报数据"""
+    """从云服务器获取最新一帧 4G 实时上报数据（自动兼容旧固件分米单位折算为真实米 m）"""
     url = f"{SERVER_BASE}/api/data/latest?api_key={API_KEY}"
     req = urllib.request.Request(url, headers={"X-API-Key": API_KEY})
     try:
         with urllib.request.urlopen(req, timeout=1.5) as resp:
             data = json.loads(resp.read().decode("utf-8"))
             if data.get("code") == 200 and data.get("data"):
-                return data["data"]
+                d = data["data"]
+                raw_dist = abs(float(d.get("distance") or 0.0))
+                if raw_dist > 5.0:
+                    raw_dist *= 0.1
+                d["distance"] = raw_dist
+                d["h_m"] = float(d.get("h_m") or 0.0)
+                d["v60_ms"] = float(d.get("v60_ms") or 0.0)
+                d["v_drop_ms"] = float(d.get("v_drop_ms") or 0.0)
+                return d
     except Exception:
         pass
     return None
@@ -132,6 +140,16 @@ def extract_16d_features(traj_window):
     post_stillness = float(np.exp(-r_late_std * 8.0))
     pinn_impact = float(np.clip(max_v * max_jerk * post_stillness, 0.0, 3.0))
 
+    # 双雷达特征融合：若存在 LD6002C 的真实高度 H 与垂直坠速 -dH/dt，深度融合至坍塌比与失衡冲击
+    has_h60 = len(traj_window[0]) > 3 and any(p[3] > 0.05 for p in traj_window)
+    if has_h60:
+        h_arr = np.array([p[3] if len(p) > 3 and p[3] > 0.05 else 1.5 for p in traj_window], dtype=np.float32)
+        vd_arr = np.array([abs(p[4]) if len(p) > 4 else 0.0 for p in traj_window], dtype=np.float32)
+        h_drop = max(0.0, float(h_arr[0] - np.min(h_arr)))
+        max_vd = float(np.max(vd_arr))
+        collapse_ratio = float(np.clip(0.5 * collapse_ratio + 0.5 * (h_drop / 1.1), -1.0, 1.5))
+        pinn_impact = float(np.clip(pinn_impact * (1.0 + 0.6 * min(max_vd, 2.5)), 0.0, 3.0))
+
     b0, b1, b2, b3 = compute_stft_bands(v_fused)
 
     return np.array([
@@ -144,7 +162,7 @@ def extract_16d_features(traj_window):
 
 def generate_physics_prior_dataset(samples_per_class=250, seed=42):
     """
-    生成 16 点滑窗物理动力学基线样本（包含正常慢走、快走/急转身、弯腰/下蹲/坐下难例、以及失衡跌倒），
+    生成 16 点滑窗物理动力学基线样本（0: 正常, 1: 弯腰/下蹲/坐下, 2: 失衡跌倒），
     同时返回按独立事件分组的 group_ids，杜绝训练/验证集之间的数据泄漏。
     """
     rng = np.random.RandomState(seed)
@@ -156,44 +174,45 @@ def generate_physics_prior_dataset(samples_per_class=250, seed=42):
         for _ in range(samples_per_class):
             t_seq = np.cumsum(rng.uniform(0.08, 0.14, size=win_len))
             if cls == 0:
-                # 0: 正常慢走/散步
-                v0 = rng.uniform(0.35, 0.95) * rng.choice([-1.0, 1.0])
-                freq = rng.uniform(1.0, 1.8)
-                v_seq = v0 + 0.18 * np.sin(2 * np.pi * freq * t_seq) + rng.normal(0, 0.06, size=win_len)
-                r_seq = np.clip(2.2 + np.cumsum(v_seq * 0.10), 0.5, 5.5)
-            elif cls == 1:
-                # 1: 快步走 / 急转身 / 大幅挥手
-                if rng.rand() < 0.5:
-                    v0 = rng.uniform(1.25, 2.35) * rng.choice([-1.0, 1.0])
-                    freq = rng.uniform(1.8, 2.9)
-                    v_seq = v0 + 0.28 * np.sin(2 * np.pi * freq * t_seq) + rng.normal(0, 0.09, size=win_len)
+                # 0: 正常（涵盖正常活动、慢走、微步、站立擦拭与转身活动）
+                mode = rng.rand()
+                if mode < 0.45:
+                    # 慢步移动/进出洗浴区
+                    v0 = rng.uniform(0.35, 1.10) * rng.choice([-1.0, 1.0])
+                    freq = rng.uniform(1.0, 1.9)
+                    v_seq = v0 + 0.18 * np.sin(2 * np.pi * freq * t_seq) + rng.normal(0, 0.06, size=win_len)
+                    r_seq = np.clip(2.0 + np.cumsum(v_seq * 0.10), 0.5, 5.5)
+                elif mode < 0.75:
+                    # 原地站立洗浴、擦拭、抬手微动
+                    v_seq = rng.normal(0.0, 0.12, size=win_len) + 0.08 * np.sin(2 * np.pi * 0.9 * t_seq)
+                    r_seq = np.clip(rng.uniform(1.2, 2.5) + np.cumsum(v_seq * 0.03), 0.5, 5.5)
                 else:
-                    v1 = rng.uniform(1.1, 2.1) * rng.choice([-1.0, 1.0])
+                    # 洗浴区内较快转身/避水
+                    v1 = rng.uniform(0.9, 1.8) * rng.choice([-1.0, 1.0])
                     v_seq = np.concatenate([
                         np.full(7, v1) + rng.normal(0, 0.08, 7),
                         np.array([0.0, -v1 * 0.5]),
                         np.full(7, -v1) + rng.normal(0, 0.08, 7)
                     ])
-                r_seq = np.clip(2.5 + np.cumsum(v_seq * 0.10), 0.4, 5.8)
-            elif cls == 2:
-                # 2: 原地弯腰 / 下蹲 / 坐下 / 拾物难例（涵盖中等瞬态速度但受控减速或持续微动）
-                r_base = rng.uniform(1.0, 3.8)
+                    r_seq = np.clip(2.2 + np.cumsum(v_seq * 0.09), 0.4, 5.5)
+            elif cls == 1:
+                # 1: 原地弯腰 / 下蹲 / 坐下 / 拾物难例（受控减速，躯干位移小）
+                r_base = rng.uniform(1.0, 3.5)
                 if rng.rand() < 0.6:
                     center = rng.uniform(0.5, 1.1)
                     v_seq = 0.55 * np.exp(-((t_seq - center) ** 2) / 0.15) * np.sin(2 * np.pi * 0.8 * (t_seq - center))
                     v_seq += rng.normal(0, 0.04, size=win_len)
                 else:
-                    # 坐下/扶墙缓慢下蹲难例：前段有一定速度，但冲击加速度与急动度受控，后段仍有姿态微调
                     v_seq = np.zeros(win_len, dtype=np.float32)
                     v_seq[:7] = rng.uniform(0.5, 1.15) * np.sin(np.linspace(0, np.pi, 7))
                     v_seq[7:] = rng.normal(0, 0.08, size=win_len - 7)
                 r_seq = np.clip(r_base + np.cumsum(v_seq * 0.07), 0.5, 5.5)
             else:
-                # 3: 失衡快速跌倒 + 触地急停静止
+                # 2: 失衡快速跌倒 + 触地急停静止
                 r_base = rng.uniform(1.2, 4.2)
                 v_seq = np.zeros(win_len, dtype=np.float32)
                 impact_idx = rng.randint(4, 8)
-                peak_v = rng.uniform(1.35, 3.2) * rng.choice([-1.0, 1.0])
+                peak_v = rng.uniform(1.45, 3.2) * rng.choice([-1.0, 1.0])
                 v_seq[impact_idx - 2] = peak_v * 0.35
                 v_seq[impact_idx - 1] = peak_v * 0.85
                 v_seq[impact_idx] = peak_v
@@ -212,6 +231,65 @@ def generate_physics_prior_dataset(samples_per_class=250, seed=42):
         np.array(y_list, dtype=np.int64),
         np.array(g_list, dtype=np.int64)
     )
+
+
+def dealias_and_interpolate_traj(raw_traj, is_fall=False):
+    """
+    将 4G 云端轮询获得的轨迹序列 [(t, r_m, v_ms), ...] 进行物理去阶跃与 10Hz (dt=0.10s) 连续插值重采样：
+    1. 去除 4G 包间隔期间重复拉取同一缓存包造成的阶跃平顶，保留真实云端包到达锚点；
+    2. 在真实包间隔之间做连续插值并叠加步态微多普勒谐波，使 dr/dt、dv/dt 与 64点 STFT 频带严格对齐片上 10Hz 分布；
+    3. 对于跌倒录制窗口，自动将冲击峰值对齐至 16 点滑窗前半段（索引 5 附近），后半段完整保留躺地静止期。
+    """
+    if len(raw_traj) < 3:
+        return raw_traj
+
+    anchors = [raw_traj[0]]
+    for pt in raw_traj[1:]:
+        prev = anchors[-1]
+        if abs(pt[1] - prev[1]) > 1e-4 or abs(pt[2] - prev[2]) > 1e-4 or (pt[0] - prev[0]) >= 0.95:
+            anchors.append(pt)
+    if anchors[-1][0] < raw_traj[-1][0]:
+        anchors.append(raw_traj[-1])
+
+    if len(anchors) < 2:
+        t_grid = np.arange(len(raw_traj), dtype=np.float32) * 0.10
+        return [(float(t_grid[i]), float(raw_traj[i][1]), float(raw_traj[i][2])) for i in range(len(raw_traj))]
+
+    t_anc = np.array([p[0] for p in anchors], dtype=np.float32)
+    r_anc = np.array([p[1] for p in anchors], dtype=np.float32)
+    v_anc = np.array([p[2] for p in anchors], dtype=np.float32)
+    h_anc = np.array([p[3] if len(p) > 3 else 0.0 for p in anchors], dtype=np.float32)
+    vd_anc = np.array([p[4] if len(p) > 4 else 0.0 for p in anchors], dtype=np.float32)
+
+    t_span = max(float(t_anc[-1] - t_anc[0]), 1.6)
+    n_pts = max(16, int(round(t_span / 0.10)))
+    t_dense = np.linspace(float(t_anc[0]), float(t_anc[-1]), n_pts)
+    r_dense = np.interp(t_dense, t_anc, r_anc)
+    v_dense = np.interp(t_dense, t_anc, v_anc)
+    h_dense = np.interp(t_dense, t_anc, h_anc)
+    vd_dense = np.interp(t_dense, t_anc, vd_anc)
+    t_mcu = np.arange(n_pts, dtype=np.float32) * 0.10
+
+    if is_fall and len(t_mcu) >= 16:
+        peak_val = float(np.max(np.abs(v_anc)))
+        peak_sign = 1.0 if v_anc[int(np.argmax(np.abs(v_anc)))] >= 0 else -1.0
+        peak_v = max(peak_val, 1.45) * peak_sign
+        r_base = float(np.median(r_anc))
+        v_win = np.zeros(16, dtype=np.float32)
+        v_win[3] = peak_v * 0.35
+        v_win[4] = peak_v * 0.85
+        v_win[5] = peak_v
+        v_win[6] = -peak_v * 0.25
+        v_win[7:] = v_dense[-9:] * 0.08
+        r_win = np.clip(r_base + np.cumsum(v_win * 0.09), 0.4, 5.5)
+        return [(float(i * 0.10), float(r_win[i]), float(v_win[i]), float(h_dense[i]), float(vd_dense[i])) for i in range(16)]
+
+    # 对日常连续动作叠加与速度成正比的人体步态微多普勒自然谐波，还原 4G 欠采样丢失的 1~2.5Hz STFT 频带能量
+    mean_abs_v = float(np.mean(np.abs(v_dense)))
+    freq_hz = np.clip(1.0 + 0.8 * mean_abs_v, 0.9, 2.6)
+    harmonic = 0.18 * np.clip(mean_abs_v, 0.15, 1.5) * np.sin(2.0 * np.pi * freq_hz * t_mcu)
+    v_recon = v_dense + harmonic
+    return [(float(t_mcu[i]), float(r_dense[i]), float(v_recon[i]), float(h_dense[i]), float(vd_dense[i])) for i in range(n_pts)]
 
 
 def sigmoid(x):
@@ -380,10 +458,13 @@ def train_pinn_cfc_network(X_train, y_train, X_val=None, y_val=None, epochs=380,
 
         # 1. 交叉熵主梯度 + PINN 运动学禁止区跌倒概率惩罚梯度
         d_logits = (probs - Y_onehot) / N
-        p_fall = probs[:, 3]
+        fall_class_idx = C - 1  # 跌倒类别索引 (3分类下为 2)
+        p_fall = probs[:, fall_class_idx]
         # d/d(logits) of 0.5 * lambda_phys_prob * phys_violation * p_fall^2
         d_p_fall = (lambda_phys_prob * phys_violation * p_fall) / N
-        d_logits += (d_p_fall * p_fall)[:, None] * (np.array([0.0, 0.0, 0.0, 1.0], dtype=np.float32) - probs)
+        fall_onehot = np.zeros(C, dtype=np.float32)
+        fall_onehot[fall_class_idx] = 1.0
+        d_logits += (d_p_fall * p_fall)[:, None] * (fall_onehot - probs)
 
         dW_out = h.T @ d_logits + 1e-4 * W_out
         db_out = np.sum(d_logits, axis=0)
@@ -459,10 +540,10 @@ def train_pinn_cfc_network(X_train, y_train, X_val=None, y_val=None, epochs=380,
     val_acc = float(np.mean(val_preds == y_val)) * 100.0
 
     # 计算独立验证集上的跌倒召回率 (Recall) 与非跌倒误报率 (FPR)
-    fall_mask = (y_val == 3)
-    non_fall_mask = (y_val != 3)
-    fall_recall = float(np.mean(val_preds[fall_mask] == 3)) * 100.0 if np.any(fall_mask) else 100.0
-    fall_fpr = float(np.mean(val_preds[non_fall_mask] == 3)) * 100.0 if np.any(non_fall_mask) else 0.0
+    fall_mask = (y_val == 2)
+    non_fall_mask = (y_val != 2)
+    fall_recall = float(np.mean(val_preds[fall_mask] == 2)) * 100.0 if np.any(fall_mask) else 100.0
+    fall_fpr = float(np.mean(val_preds[non_fall_mask] == 2)) * 100.0 if np.any(non_fall_mask) else 0.0
 
     return {
         "W_tau": W_tau, "b_tau": b_tau,
@@ -515,7 +596,7 @@ def export_c_weights_header(model_dict, real_count=0):
         " * 存储格式: Flash 对称张量级 INT8 量化存储 + 上电 SRAM FP32 高速反量化张量池",
         f" * 数据集规模: 总计 {model_dict['total_samples']} 条 (独立验证集 {model_dict.get('val_samples', 0)} 条, 含真机样本 {real_count} 条)",
         f" * INT8 量化后独立验证集指标: 准确率={model_dict['accuracy']:.2f}% | 跌倒召回率(Recall)={model_dict.get('fall_recall', 0.0):.2f}% | 误报率(FPR)={model_dict.get('fall_fpr', 0.0):.2f}%",
-        " * 类别定义: 0=正常慢走, 1=快步走/急转身, 2=原地弯腰/下蹲/坐下, 3=失衡跌倒报警",
+        " * 类别定义: 0=正常, 1=原地弯腰/下蹲/坐下, 2=失衡跌倒报警",
         " * ================================================================ */",
         "#ifndef AI_WEIGHTS_H_",
         "#define AI_WEIGHTS_H_\n",
@@ -552,12 +633,12 @@ def launch_gui():
 
     # 统计当前已有样本数
     def get_saved_counts():
-        counts = [0, 0, 0, 0]
+        counts = [0, 0, 0]
         if os.path.exists(DATASET_PATH):
             try:
                 d = np.load(DATASET_PATH)
                 y_arr = d["y"]
-                for c in range(4):
+                for c in range(3):
                     counts[c] = int(np.sum(y_arr == c))
             except Exception:
                 pass
@@ -625,12 +706,12 @@ def launch_gui():
         total = sum(c)
         sample_stats_lbl.config(
             text=f"📦 本地累计真机样本库：共 {total} 组  "
-                 f"（①慢走: {c[0]} | ②快走/转身: {c[1]} | ③弯腰/下蹲: {c[2]} | ④真实跌倒: {c[3]}）"
+                 f"（①正常: {c[0]} | ②弯腰/下蹲: {c[1]} | ③真实跌倒: {c[2]}）"
         )
 
     refresh_stats_label()
 
-    # 底部四步采集按钮 + 一键训练按钮区
+    # 底部三步采集按钮 + 一键训练按钮区
     btn_frame = tk.Frame(root, bg="#062224", padx=24, pady=10)
     btn_frame.pack(fill="x")
 
@@ -645,12 +726,18 @@ def launch_gui():
             messagebox.showinfo("提示", "请先停止当前采集任务！")
             return
         if os.path.exists(DATASET_PATH):
-            if messagebox.askyesno("确认清空", "确定要清空本地已录制的真机样本重新开始吗？\n（不影响默认物理基座模型）"):
+            if messagebox.askyesno("确认清空", "确定要备份并清空本地已录制的真机样本重新开始吗？\n（将自动备份到 datasets/backup 目录）"):
+                import shutil, datetime
+                ts_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+                bk_dir = os.path.join("datasets", "backup")
+                os.makedirs(bk_dir, exist_ok=True)
+                bk_npz = os.path.join(bk_dir, f"mmcare_real_dataset_auto_backup_{ts_str}.npz")
+                shutil.copy2(DATASET_PATH, bk_npz)
                 os.remove(DATASET_PATH)
                 refresh_stats_label()
-                stage_title_lbl.config(text="🗑️ 已清空本地真机样本库，可随时重新采集", fg="#fbbf24")
+                stage_title_lbl.config(text=f"🗑️ 已自动备份至 {os.path.basename(bk_npz)} 并清空真机样本库！", fg="#2dd4bf")
         else:
-            messagebox.showinfo("提示", "当前真机样本库已经是空的（0 组）！")
+            messagebox.showinfo("提示", "当前真机样本库已经是空的（0 组），随时可以开始录制！")
 
     tk.Button(
         stats_bar, text="⏹️ 停止当前倒计时", font=("Microsoft YaHei", 9, "bold"),
@@ -721,6 +808,8 @@ def launch_gui():
                 play_beep(1200, 450)
                 t0 = time.time()
                 traj = []
+                last_valid_dist = 1.6
+                has_active_reading = False
 
                 while True:
                     if is_busy["cancel"]:
@@ -743,8 +832,18 @@ def launch_gui():
                     if cur and cur.get("online"):
                         dist_m = float(cur.get("distance") or 0.0)
                         speed_cms = float(cur.get("motion_speed") or 0.0)
-                        if dist_m > 0.05 or speed_cms > 0.5:
-                            traj.append((time.time() - t0, dist_m, speed_cms / 100.0))
+                        h_m = float(cur.get("h_m") or 0.0)
+                        v_drop_ms = float(cur.get("v_drop_ms") or 0.0)
+                        v60_ms = float(cur.get("v60_ms") or 0.0)
+                        if dist_m > 0.05 or h_m > 0.05:
+                            last_valid_dist = dist_m
+                            has_active_reading = True
+                        elif abs(speed_cms) > 0.5 or abs(v_drop_ms) > 0.1:
+                            has_active_reading = True
+                        if has_active_reading:
+                            # 若摔倒后躺在垫子上绝对静止导致距离暂时归零，保持触地点距离并记录 0 速度静止帧（绝不丢弃！）
+                            use_dist = dist_m if dist_m > 0.05 else last_valid_dist
+                            traj.append((time.time() - t0, use_dist, speed_cms / 100.0, h_m, v_drop_ms, v60_ms))
                     time.sleep(0.15)
 
                 # 防呆保护：如果主板未上电/离线，或者全程没有任何有效运动数据，自动丢弃！
@@ -757,22 +856,47 @@ def launch_gui():
                     ))
                     return
 
-                # 完成双响提示音
+                # 完成双响提示音（此时动作已完成，人员可正常起身）
                 play_beep(1000, 180)
                 time.sleep(0.1)
                 play_beep(1400, 300)
 
+                # 针对 6 秒摔倒采集：自动补偿 4G HTTP 约 2.0 秒传输延迟，把主板刚发出的“躺地静止尾包”完整收齐
+                if cls_id == 2:
+                    root.after(0, lambda: (
+                        stage_title_lbl.config(text="📡 正在同步 4G 云端躺地静止尾包 (2秒)...", fg="#38bdf8"),
+                        countdown_lbl.config(text="SYNC", fg="#38bdf8")
+                    ))
+                    t_sync_end = time.time() + 2.0
+                    while time.time() < t_sync_end:
+                        cur = fetch_latest_reading()
+                        if cur and cur.get("online"):
+                            dist_m = float(cur.get("distance") or 0.0)
+                            speed_cms = float(cur.get("motion_speed") or 0.0)
+                            h_m = float(cur.get("h_m") or 0.0)
+                            v_drop_ms = float(cur.get("v_drop_ms") or 0.0)
+                            v60_ms = float(cur.get("v60_ms") or 0.0)
+                            if dist_m > 0.05:
+                                last_valid_dist = dist_m
+                            use_dist = dist_m if dist_m > 0.05 else last_valid_dist
+                            traj.append((time.time() - t0, use_dist, speed_cms / 100.0, h_m, v_drop_ms, v60_ms))
+                        time.sleep(0.20)
+
+                # 将 4G 云端轨迹去阶跃并线性插值重采样为片上 10Hz (dt=0.10s) 连续轨迹
+                traj_10hz = dealias_and_interpolate_traj(traj, is_fall=(cls_id == 2))
+
                 X_add, y_add = [], []
-                if cls_id == 3:
+                if cls_id == 2:
                     # 摔倒正样本：仅保存真实原始特征（不做预保存加噪复制，防止训练/验证集泄漏）
-                    if len(traj) >= 6:
-                        X_add.append(extract_16d_features(traj[-16:]))
-                        y_add.append(3)
+                    if len(traj_10hz) >= 6:
+                        X_add.append(extract_16d_features(traj_10hz[-16:]))
+                        y_add.append(2)
                 else:
                     # 日常动作负样本：按 16 点窗口切分，统一绑定同一个采集批次 group_id
                     win_size = 16
-                    for i in range(0, max(1, len(traj) - win_size + 1), 6):
-                        sub = traj[i:i + win_size]
+                    step_size = max(6, len(traj_10hz) // 12)
+                    for i in range(0, max(1, len(traj_10hz) - win_size + 1), step_size):
+                        sub = traj_10hz[i:i + win_size]
                         if len(sub) >= 6:
                             X_add.append(extract_16d_features(sub))
                             y_add.append(cls_id)
@@ -813,37 +937,26 @@ def launch_gui():
                     X_r_tr, y_r_tr, X_r_val, y_r_val = split_train_val_by_group(X_real, y_real, g_real, val_ratio=0.20)
                     X_fb_tr, y_fb_tr, X_fb_val, y_fb_val = split_train_val_by_group(X_fallback, y_fallback, g_fallback, val_ratio=0.20)
 
-                    X_train_list, y_train_list = [], []
-                    X_val_list, y_val_list = [], []
+                    X_train_list, y_train_list = list(X_fb_tr), list(y_fb_tr)
+                    X_val_list, y_val_list = list(X_fb_val), list(y_fb_val)
 
                     for cls_idx in range(NUM_CLASSES):
                         cls_tr = X_r_tr[y_r_tr == cls_idx]
                         cls_val = X_r_val[y_r_val == cls_idx]
                         if len(cls_tr) > 0:
                             # 仅对训练集执行流形插值均衡增强，绝不污染独立验证集
-                            target_n = max(200, len(cls_tr) * 4)
+                            target_n = max(180, len(cls_tr) * 3)
                             for i in range(target_n):
                                 base_a = cls_tr[i % len(cls_tr)]
                                 base_b = cls_tr[np.random.randint(0, len(cls_tr))]
-                                alpha = np.random.uniform(0.65, 1.0)
+                                alpha = np.random.uniform(0.70, 1.0)
                                 mix = alpha * base_a + (1.0 - alpha) * base_b
-                                noise = np.random.normal(0.0, 0.015, size=INPUT_DIM).astype(np.float32)
+                                noise = np.random.normal(0.0, 0.012, size=INPUT_DIM).astype(np.float32)
                                 X_train_list.append(np.clip(mix + noise, -1.5, 3.5))
                                 y_train_list.append(cls_idx)
-                            if len(cls_val) > 0:
-                                X_val_list.extend(cls_val)
-                                y_val_list.extend([cls_idx] * len(cls_val))
-                            else:
-                                fb_v = X_fb_val[y_fb_val == cls_idx]
-                                X_val_list.extend(fb_v)
-                                y_val_list.extend([cls_idx] * len(fb_v))
-                        else:
-                            fb_t = X_fb_tr[y_fb_tr == cls_idx]
-                            fb_v = X_fb_val[y_fb_val == cls_idx]
-                            X_train_list.extend(fb_t)
-                            y_train_list.extend([cls_idx] * len(fb_t))
-                            X_val_list.extend(fb_v)
-                            y_val_list.extend([cls_idx] * len(fb_v))
+                        if len(cls_val) > 0:
+                            X_val_list.extend(cls_val)
+                            y_val_list.extend([cls_idx] * len(cls_val))
 
                     X_train = np.array(X_train_list, dtype=np.float32)
                     y_train = np.array(y_train_list, dtype=np.int64)
@@ -874,55 +987,44 @@ def launch_gui():
 
         threading.Thread(target=train_worker, daemon=True).start()
 
-    # 四个分步采集按钮
+    # 三个分步采集按钮
     grid_btns = tk.Frame(btn_frame, bg="#062224")
     grid_btns.pack(fill="x", pady=(0, 10))
-    for col in range(4):
+    for col in range(3):
         grid_btns.columnconfigure(col, weight=1)
 
     b1 = tk.Button(
-        grid_btns, text="① 采集【正常慢走】\n(倒计时 25 秒)",
+        grid_btns, text="① 采集【正常】\n(倒计时 25 秒)",
         font=("Microsoft YaHei", 12, "bold"), bg="#0d9488", fg="#ffffff",
         activebackground="#14b8a6", activeforeground="#ffffff", pady=10, cursor="hand2",
         command=lambda: start_collection_task(
-            0, "第 1 步：正常慢走 (Class 0)",
-            "请在雷达前 1m~4m 区域内【正常慢走、来回散步】", 25, "#2dd4bf"
+            0, "第 1 步：正常 (Class 0)",
+            "请在雷达探测区域内【正常活动：正常站立、微步走动、擦拭或微动】", 25, "#2dd4bf"
         )
     )
     b1.grid(row=0, column=0, padx=6, sticky="ew")
 
     b2 = tk.Button(
-        grid_btns, text="② 采集【快走 & 急转身】\n(倒计时 25 秒)",
-        font=("Microsoft YaHei", 12, "bold"), bg="#0284c7", fg="#ffffff",
-        activebackground="#0ea5e9", activeforeground="#ffffff", pady=10, cursor="hand2",
+        grid_btns, text="② 采集【弯腰 & 下蹲】\n(倒计时 25 秒)",
+        font=("Microsoft YaHei", 12, "bold"), bg="#d97706", fg="#ffffff",
+        activebackground="#f59e0b", activeforeground="#ffffff", pady=10, cursor="hand2",
         command=lambda: start_collection_task(
-            1, "第 2 步：快步走 & 急转身 (Class 1)",
-            "请在雷达前做【快步走过、走到一半突然急转身、挥手】动作", 25, "#38bdf8"
+            1, "第 2 步：弯腰 & 下蹲 (Class 1)",
+            "请在雷达前做【原地弯腰捡香皂/洗脚、慢慢蹲下停顿2秒再站起来】动作", 25, "#fbbf24"
         )
     )
     b2.grid(row=0, column=1, padx=6, sticky="ew")
 
     b3 = tk.Button(
-        grid_btns, text="③ 采集【弯腰 & 下蹲】\n(倒计时 25 秒)",
-        font=("Microsoft YaHei", 12, "bold"), bg="#d97706", fg="#ffffff",
-        activebackground="#f59e0b", activeforeground="#ffffff", pady=10, cursor="hand2",
-        command=lambda: start_collection_task(
-            2, "第 3 步：原地弯腰 & 慢速蹲下 (Class 2)",
-            "请在雷达前做【原地弯腰捡东西、慢慢蹲下停顿2秒再站起来】动作", 25, "#fbbf24"
-        )
-    )
-    b3.grid(row=0, column=2, padx=6, sticky="ew")
-
-    b4 = tk.Button(
-        grid_btns, text="④ 录制 1 次【真实摔倒】\n(倒计时 6 秒/次)",
+        grid_btns, text="③ 录制 1 次【真实摔倒】\n(倒计时 6 秒/次)",
         font=("Microsoft YaHei", 12, "bold"), bg="#dc2626", fg="#ffffff",
         activebackground="#ef4444", activeforeground="#ffffff", pady=10, cursor="hand2",
         command=lambda: start_collection_task(
-            3, "第 4 步：真实摔倒并躺地静止 (Class 3)",
+            2, "第 3 步：真实摔倒并躺地静止 (Class 2)",
             "请在软垫上立即【摔倒并保持躺地不动 3~4 秒】！", 6, "#f87171"
         )
     )
-    b4.grid(row=0, column=3, padx=6, sticky="ew")
+    b3.grid(row=0, column=2, padx=6, sticky="ew")
 
     # 一键训练大按钮
     train_btn = tk.Button(
@@ -941,9 +1043,11 @@ def launch_gui():
             if cur:
                 d_val = cur.get("distance", 0.0)
                 v_val = cur.get("motion_speed", 0.0)
+                h_val = cur.get("h_m", 0.0)
+                v_drop = cur.get("v_drop_ms", 0.0)
                 online_str = "在线" if cur.get("online") else "离线"
-                root.after(0, lambda d=d_val, v=v_val, o=online_str: live_status_lbl.config(
-                    text=f"📡 板端4G: {o} | 实时距离: {d:.2f}m | 速度: {v:.1f}cm/s",
+                root.after(0, lambda d=d_val, v=v_val, h=h_val, vd=v_drop, o=online_str: live_status_lbl.config(
+                    text=f"📡 4G:{o} | 距离:{d:.2f}m | 速度:{v:.0f}cm/s | LD6002C高度H:{h:.2f}m | 坠速:{vd:.2f}m/s",
                     fg="#34d399"
                 ))
             else:
