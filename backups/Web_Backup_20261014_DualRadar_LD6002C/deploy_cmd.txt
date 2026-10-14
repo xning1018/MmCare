@@ -1,0 +1,55 @@
+cat << 'EOF' > /home/ubuntu/patch_ld6002c.py
+import os, json, subprocess
+
+# 1. 更新 schemas.py
+s_path = '/home/ubuntu/mmcare_server/schemas.py'
+s = open(s_path, 'r', encoding='utf-8').read()
+if 'h_m: Optional[float] = None' not in s:
+    target = 'fall_confidence: Optional[float] = None'
+    rep = 'fall_confidence: Optional[float] = None\n    h_m: Optional[float] = None\n    v60_ms: Optional[float] = None\n    v_drop_ms: Optional[float] = None'
+    open(s_path, 'w', encoding='utf-8').write(s.replace(target, rep, 1))
+    print('[OK] schemas.py updated')
+
+# 2. 更新 services/readings.py
+r_path = '/home/ubuntu/mmcare_server/services/readings.py'
+r = open(r_path, 'r', encoding='utf-8').read()
+if 'raw_meta' not in r:
+    target = 'raw = json.dumps({"virtual": virtual_fields}, ensure_ascii=False) if virtual_fields else None'
+    rep = '''raw_meta = {}
+    if virtual_fields:
+        raw_meta['virtual'] = virtual_fields
+    if payload.h_m is not None:
+        raw_meta['h_m'] = payload.h_m
+    if payload.v60_ms is not None:
+        raw_meta['v60_ms'] = payload.v60_ms
+    if payload.v_drop_ms is not None:
+        raw_meta['v_drop_ms'] = payload.v_drop_ms
+    raw = json.dumps(raw_meta, ensure_ascii=False) if raw_meta else None'''
+    open(r_path, 'w', encoding='utf-8').write(r.replace(target, rep, 1))
+    print('[OK] readings.py updated')
+
+# 3. 更新 api/legacy.py
+l_path = '/home/ubuntu/mmcare_server/api/legacy.py'
+l = open(l_path, 'r', encoding='utf-8').read()
+if 'import json' not in l:
+    l = 'import json\n' + l
+if '"h_m":' not in l:
+    target = '"timestamp": row["ts"],'
+    rep = '''"timestamp": row["ts"],
+            "h_m": (json.loads(row["raw"]).get("h_m") if row.get("raw") and row["raw"] else None),
+            "v60_ms": (json.loads(row["raw"]).get("v60_ms") if row.get("raw") and row["raw"] else None),
+            "v_drop_ms": (json.loads(row["raw"]).get("v_drop_ms") if row.get("raw") and row["raw"] else None),'''
+    open(l_path, 'w', encoding='utf-8').write(l.replace(target, rep, 1))
+    print('[OK] legacy.py updated')
+
+# 4. 同步 Web 前端大屏页面
+if os.path.exists('/home/ubuntu/dashboard.html'):
+    subprocess.run('cp /home/ubuntu/dashboard.html /home/ubuntu/index.html', shell=True)
+    print('[OK] index.html updated from dashboard.html')
+
+# 5. 重启 uvicorn 服务
+subprocess.run('pkill -f uvicorn', shell=True)
+subprocess.run('cd /home/ubuntu/mmcare_server && nohup python3 -m uvicorn main:app --host 0.0.0.0 --port 8080 > server.log 2>&1 &', shell=True)
+print('[OK] mmcare server reloaded on port 8080 successfully!')
+EOF
+python3 /home/ubuntu/patch_ld6002c.py

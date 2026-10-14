@@ -173,6 +173,20 @@
       justify-content: space-between;
     }
 
+    /* 浴室滞留预警横幅 (自动显示 3 秒后平滑淡出) */
+    #stay-alarm-banner {
+      display: none;
+      background: linear-gradient(90deg, rgba(217, 119, 6, 0.95), rgba(180, 83, 9, 0.95));
+      border: 1px solid #f59e0b;
+      border-radius: 12px;
+      padding: 16px 24px;
+      color: #fff;
+      box-shadow: 0 0 25px rgba(245, 158, 11, 0.6);
+      align-items: center;
+      justify-content: space-between;
+      transition: opacity 0.5s ease;
+    }
+
     @keyframes alarm-pulse {
       from { box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
       to { box-shadow: 0 0 35px rgba(239, 68, 68, 0.8); }
@@ -256,6 +270,7 @@
     .badge-danger { background: rgba(239, 68, 68, 0.25); color: #f87171; }
     .badge-warning { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
     .badge-info { background: rgba(20, 184, 166, 0.22); color: #5eead4; }
+    .badge-secondary { background: rgba(148, 163, 184, 0.2); color: #94a3b8; }
 
     /* 主可视化两栏布局 */
     .dashboard-body {
@@ -426,15 +441,28 @@
   </header>
 
   <main>
-    <!-- 跌倒警报全局横幅 -->
+    <!-- 跌倒警报全局横幅 (永久保持直至人工确认) -->
     <div id="fall-alarm-banner">
       <div class="alarm-content">
         <div class="alarm-icon">🚨</div>
         <div>
           <h2 id="fall-banner-title" style="font-size: 18px; font-weight: 800; margin: 0;">【紧急跌倒警报】检测到长者跌倒！[触发代码: 111]</h2>
+          <p id="fall-banner-sub" style="font-size: 13px; color: #fee2e2; margin: 4px 0 0 0;">⚠️ 警报持续锁存中，请现场确认长者安全后，点击右侧按钮解除警报并恢复正常</p>
         </div>
       </div>
-      <button class="btn" style="background: #fff; color: #b91c1c; font-weight: 700;" onclick="dismissFallAlert()">确认已知晓</button>
+      <button class="btn" style="background: #fff; color: #b91c1c; font-weight: 800; padding: 10px 22px; font-size: 15px; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.25);" onclick="dismissFallAlert()">✅ 确认知晓 (解除警报)</button>
+    </div>
+
+    <!-- 浴室滞留过长预警横幅 (自动显示 3 秒后平滑淡出) -->
+    <div id="stay-alarm-banner">
+      <div class="alarm-content">
+        <div class="alarm-icon">⏱️</div>
+        <div>
+          <h2 id="stay-banner-title" style="font-size: 18px; font-weight: 800; margin: 0; color: #fff;">【浴室滞留预警】长者在浴室滞留时间过长！</h2>
+          <p id="stay-banner-sub" style="font-size: 13px; color: #fef3c7; margin: 4px 0 0 0;">⚠️ 检测到长者在浴室持续活动已超过 40 分钟，请留意确认安全！（本提示 3 秒后自动消失）</p>
+        </div>
+      </div>
+      <div style="font-size: 13px; font-weight: 700; color: #fff; background: rgba(0,0,0,0.25); padding: 6px 14px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2);">⏱️ 3秒后自动消失</div>
     </div>
 
     <!-- 核心指标卡片 -->
@@ -474,10 +502,24 @@
           <span class="badge badge-info" id="human-badge">有人</span>
         </div>
         <div class="card-value">
-          <span id="pose-text" style="color: #2dd4bf;">站立 (Standing)</span>
+          <span id="pose-text" style="color: #2dd4bf;">正常</span>
         </div>
         <div class="card-subtext">
-          <span id="human-detect-sub">LD2450 连续目标锁定</span>
+          <span id="human-detect-sub">端侧 AI 识别: 正常 (平稳活动)</span>
+        </div>
+      </div>
+
+      <!-- 浴室滞留时长 (新添加) -->
+      <div class="card" id="card-stay">
+        <div class="card-label">
+          <span>浴室滞留时长</span>
+          <span class="badge badge-info" id="stay-badge">实时计时</span>
+        </div>
+        <div class="card-value">
+          <span id="stay-val" style="color: #2dd4bf;">0分00秒</span>
+        </div>
+        <div class="card-subtext" id="stay-subtext">
+          <span>持续监测长者洗浴/如厕时长</span>
         </div>
       </div>
 
@@ -512,7 +554,7 @@
       </div>
 
       <!-- 运动速度 -->
-      <div class="card">
+      <div class="card" id="card-speed">
         <div class="card-label">
           <span>运动速度矢量</span>
           <span class="badge badge-info">毫米波多普勒</span>
@@ -523,6 +565,36 @@
         </div>
         <div class="card-subtext">
           <span id="speed-sub">微动 / 慢步走状态</span>
+        </div>
+      </div>
+
+      <!-- LD6002C 人体离地高度专属卡片 -->
+      <div class="card" id="card-h60" style="border-left: 3px solid #c084fc;">
+        <div class="card-label">
+          <span>人体离地高度 (H)</span>
+          <span class="badge" style="background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4);">LD6002C 3D</span>
+        </div>
+        <div class="card-value">
+          <span id="h60-val" style="color: #c084fc;">--</span>
+          <span class="card-unit">米</span>
+        </div>
+        <div class="card-subtext" id="h60-sub">
+          <span>三维点云质心离地高度</span>
+        </div>
+      </div>
+
+      <!-- LD6002C 垂直下坠速率专属卡片 -->
+      <div class="card" id="card-vdrop" style="border-left: 3px solid #f472b6;">
+        <div class="card-label">
+          <span>垂直下坠速率 (-dH/dt)</span>
+          <span class="badge" style="background: rgba(236, 72, 153, 0.2); color: #f472b6; border: 1px solid rgba(236, 72, 153, 0.4);">跌落特征</span>
+        </div>
+        <div class="card-value">
+          <span id="vdrop-val" style="color: #f472b6;">--</span>
+          <span class="card-unit">m/s</span>
+        </div>
+        <div class="card-subtext" id="vdrop-sub">
+          <span>跌倒瞬态断崖冲击速度</span>
         </div>
       </div>
     </div>
@@ -579,8 +651,10 @@
                 <tr>
                   <th>时间</th>
                   <th>温度</th>
-                  <th>距离</th>
+                  <th>距离 (LD2450)</th>
                   <th>速度</th>
+                  <th>高度 H (LD6002C)</th>
+                  <th>坠落速率 (-dH/dt)</th>
                   <th>人体</th>
                   <th>姿态</th>
                   <th>安全状态</th>
@@ -741,6 +815,92 @@
       }
     }
 
+    // 浴室滞留超时 (超40分钟) 预警推送 (同时发微信与 QQ 邮箱)
+    async function sendStayTimeoutPush(staySec, info = {}) {
+      const token = (document.getElementById("config-pushplus-token")?.value || pushplusToken || "").trim();
+      if (!token) {
+        console.warn("[PushPlus] 未配置 Token，跳过浴室滞留预警推送");
+        return;
+      }
+
+      const nowStr = info.time || new Date().toLocaleString("zh-CN", { hour12: false });
+      const devId = info.deviceId || document.getElementById("device-id-badge")?.innerText || "MM001";
+      const tempStr = info.temp || document.getElementById("temp-val")?.innerText || "--";
+      const distStr = info.dist || document.getElementById("dist-val")?.innerText || "--";
+      const speedStr = info.speed || document.getElementById("speed-val")?.innerText || "--";
+      const mins = Math.floor(staySec / 60);
+      const secs = staySec % 60;
+      const durationStr = `${mins}分${secs < 10 ? '0' : ''}${secs}秒`;
+
+      const title = `⚠️【浴室滞留预警】终端 ${devId} 浴室滞留时间已达 ${durationStr}！`;
+      const content = `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Microsoft YaHei', sans-serif; border-radius: 12px; overflow: hidden; border: 2px solid #f59e0b; background: #0c363a; color: #f0fdfa; padding: 16px;">
+          <h3 style="margin: 0 0 10px 0; color: #fbbf24; font-size: 18px;">
+            ⚠️ 浴室滞留时间过长预警提示
+          </h3>
+          <p style="margin: 6px 0; font-size: 14px; color: #ccfbf1;"><strong>监测终端：</strong>${devId}（浴室毫米波雷达监护节点）</p>
+          <p style="margin: 6px 0; font-size: 14px; color: #ccfbf1;"><strong>预警事件：</strong>长者在浴室持续活动时间已达 <strong>${durationStr}</strong>，超过安全预警阈值（40分钟）</p>
+          <p style="margin: 6px 0; font-size: 14px; color: #ccfbf1;"><strong>触发时间：</strong>${nowStr}</p>
+          <p style="margin: 6px 0; font-size: 14px; color: #ccfbf1;"><strong>当前状态：</strong>浴室持续有人（非跌倒，但滞留超时）</p>
+          <p style="margin: 6px 0; font-size: 14px; color: #ccfbf1;"><strong>目标距离：</strong>${distStr} m &nbsp;|&nbsp; <strong>运动速度：</strong>${speedStr} cm/s</p>
+          <p style="margin: 6px 0 14px 0; font-size: 14px; color: #ccfbf1;"><strong>室内温度：</strong>${tempStr} ℃</p>
+          <div style="margin-top: 10px; padding: 10px; background: rgba(245, 158, 11, 0.15); border-left: 4px solid #f59e0b; border-radius: 4px; font-size: 13px; color: #fef3c7;">
+            💡 <strong>温馨提示：</strong>请家属或看护人员现场留意长者洗浴/如厕安全，确认长者未发生虚脱、头晕或行动不便。
+          </div>
+          <a href="http://182.254.135.92:8000" style="display: inline-block; margin-top: 12px; background: #f59e0b; color: #ffffff; text-decoration: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; font-size: 14px;">👉 点击进入实时大屏查看</a>
+        </div>
+      `;
+
+      const pushNonce = `stay-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+      try {
+        await Promise.allSettled([
+          fetch("https://www.pushplus.plus/send", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              token: token,
+              title: title,
+              content: content + `<!-- wechat-${pushNonce} -->`,
+              template: "html",
+              channel: "wechat"
+            })
+          }),
+          fetch("https://www.pushplus.plus/send", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              token: token,
+              title: title + " [QQ弹窗提醒]",
+              content: content + `<!-- mail-${pushNonce} -->`,
+              template: "html",
+              channel: "mail"
+            })
+          })
+        ]);
+        console.log("[PushPlus] 浴室滞留预警双通道已推送 (微信 + QQ)");
+      } catch (err) {
+        console.error("[PushPlus] 浴室滞留推送失败:", err);
+      }
+    }
+
+    // 浴室滞留过长预警横幅显示 (展示 3 秒后平滑淡出自动消失)
+    let stayTimeoutTimer = null;
+    function showStayTimeoutAlert(staySec) {
+      const banner = document.getElementById("stay-alarm-banner");
+      if (!banner) return;
+      banner.style.display = "flex";
+      banner.style.opacity = "1";
+      playBeep(700, 0.35); // 温和蜂鸣提示
+
+      if (stayTimeoutTimer) clearTimeout(stayTimeoutTimer);
+      stayTimeoutTimer = setTimeout(() => {
+        banner.style.opacity = "0";
+        setTimeout(() => {
+          banner.style.display = "none";
+        }, 500);
+      }, 3000);
+    }
+
     // 音频蜂鸣器模拟
     let audioCtx = null;
     function playBeep(freq = 880, duration = 0.2) {
@@ -766,7 +926,50 @@
     }
 
     function dismissFallAlert() {
-      document.getElementById("fall-alarm-banner").style.display = "none";
+      window._fallLatched = false;
+      window._fallLatchedCode = 0;
+      window._fallDismissedTs = Date.now();
+      if (window._currentRadarFallTs) {
+        window._lastDismissedEventTs = window._currentRadarFallTs;
+      }
+
+      // 隐藏全局紧急横幅
+      const banner = document.getElementById("fall-alarm-banner");
+      if (banner) banner.style.display = "none";
+
+      // 立即刷新跌倒状态卡片为安全正常
+      const fallBadge = document.getElementById("fall-badge");
+      const fallStatusText = document.getElementById("fall-status-text");
+      const fallSubtext = document.getElementById("fall-subtext");
+      const fallCard = document.getElementById("card-fall");
+      if (fallBadge) {
+        fallBadge.className = "badge badge-success";
+        fallBadge.innerText = "安全";
+      }
+      if (fallStatusText) {
+        fallStatusText.innerText = "正常";
+        fallStatusText.style.color = "#34d399";
+      }
+      if (fallSubtext) {
+        fallSubtext.innerHTML = `<span>警报已被人工知晓并解除恢复正常</span>`;
+      }
+      if (fallCard) {
+        fallCard.style.borderColor = "var(--border-color)";
+        fallCard.style.boxShadow = "none";
+      }
+
+      // 姿态卡片同步恢复为正常
+      const poseTextEl = document.getElementById("pose-text");
+      const humanSubEl = document.getElementById("human-detect-sub");
+      if (poseTextEl && poseTextEl.innerText === "摔倒") {
+        poseTextEl.innerText = "正常";
+        poseTextEl.style.color = "#2dd4bf";
+      }
+      if (humanSubEl && humanSubEl.innerText.includes("摔倒")) {
+        humanSubEl.innerText = "主板端侧 AI 识别: 正常 (警报已人工解除)";
+      }
+
+      currentFallState = false;
     }
 
     function onConfigChange() {
@@ -848,61 +1051,160 @@
       humanBadge.innerText = isHuman ? "有人" : "无人";
       humanBadge.className = isHuman ? "badge badge-info" : "badge badge-warning";
 
-      // 姿态
-      const pose = data.pose || (isHuman ? "standing" : "away");
-      const poseMap = {
-        "standing": "站立 (Standing)",
-        "sitting": "坐姿 (Sitting)",
-        "lying": "卧床/平躺 (Lying)",
-        "falling": "跌倒 (Falling)",
-        "away": "离开未在场 (Away)"
-      };
-      document.getElementById("pose-text").innerText = poseMap[pose] || pose;
-
-      // 距离与速度
-      const dist = typeof data.distance === "number" ? data.distance.toFixed(2) : "0.00";
+      // 距离与速度（自动兼容旧固件分米单位 >5.0 自动折算为真实米 m）
+      const rawDist = typeof data.distance === "number" ? Math.abs(data.distance) : 0;
+      const normDist = rawDist > 5.0 ? (rawDist * 0.1) : rawDist;
+      const dist = normDist.toFixed(2);
       document.getElementById("dist-val").innerText = dist;
 
       const speed = typeof data.motion_speed === "number" ? data.motion_speed.toFixed(1) : "0.0";
       document.getElementById("speed-val").innerText = (speed > 0 ? "+" : "") + speed;
 
+      // LD6002C 专属大卡片 1: 人体离地高度 (H)
+      const rawH = (typeof data.h_m === "number") ? data.h_m : (parseFloat(data.h_m) || 0);
+      const h60ValEl = document.getElementById("h60-val");
+      const h60SubEl = document.getElementById("h60-sub");
+      if (h60ValEl) {
+        if (rawH > 0.05) {
+          h60ValEl.innerText = rawH.toFixed(2);
+          if (rawH > 1.1) {
+            h60ValEl.style.color = "#34d399";
+            h60SubEl.innerHTML = `<span style="color:#34d399;">正常站立姿态 (${rawH.toFixed(2)}m > 1.0m)</span>`;
+          } else if (rawH >= 0.65 && rawH <= 1.05) {
+            h60ValEl.style.color = "#fbbf24";
+            h60SubEl.innerHTML = `<span style="color:#fbbf24;">弯腰/坐下/下蹲 (${rawH.toFixed(2)}m)</span>`;
+          } else if (rawH < 0.45) {
+            h60ValEl.style.color = "#ef4444";
+            h60SubEl.innerHTML = `<span style="color:#ef4444; font-weight:700;">⚠️ 贴地卧倒低位 (${rawH.toFixed(2)}m < 0.45m)</span>`;
+          } else {
+            h60ValEl.style.color = "#c084fc";
+            h60SubEl.innerHTML = `<span>三维质心离地高度</span>`;
+          }
+        } else {
+          h60ValEl.innerText = "--";
+          h60ValEl.style.color = "#94a3b8";
+          h60SubEl.innerHTML = `<span>等待雷达高度帧...</span>`;
+        }
+      }
+
+      // LD6002C 专属大卡片 2: 垂直下坠速率 (-dH/dt)
+      const rawVdrop = (typeof data.v_drop_ms === "number") ? data.v_drop_ms : (parseFloat(data.v_drop_ms) || 0);
+      const vdropValEl = document.getElementById("vdrop-val");
+      const vdropSubEl = document.getElementById("vdrop-sub");
+      if (vdropValEl) {
+        if (typeof data.v_drop_ms !== "undefined") {
+          const vdStr = (rawVdrop > 0 ? "+" : "") + rawVdrop.toFixed(2);
+          vdropValEl.innerText = vdStr;
+          if (rawVdrop >= 0.60) {
+            vdropValEl.style.color = "#ef4444";
+            vdropSubEl.innerHTML = `<span style="color:#ef4444; font-weight:700;">🚨 断崖下坠冲击! (${vdStr}m/s)</span>`;
+          } else if (Math.abs(rawVdrop) > 0.25) {
+            vdropValEl.style.color = "#fbbf24";
+            vdropSubEl.innerHTML = `<span style="color:#fbbf24;">姿态快速变动 (${vdStr}m/s)</span>`;
+          } else {
+            vdropValEl.style.color = "#f472b6";
+            vdropSubEl.innerHTML = `<span>平稳无失衡下坠</span>`;
+          }
+        } else {
+          vdropValEl.innerText = "--";
+          vdropValEl.style.color = "#94a3b8";
+          vdropSubEl.innerHTML = `<span>跌倒瞬态断崖冲击速度</span>`;
+        }
+      }
+
       // 跌倒判断与触发码解析 (1 = 仅LD6002C, 11 = 双雷达同时, 111 = 仅LD2450)
       const rawFall = data.fall;
       const rawHumCode = Number(data.humidity);
       const rawConfCode = Number(data.fall_confidence);
-      let fallCode = 0;
+      let incomingFallCode = 0;
 
       // 1. 直接从实时数据提取单片机触发码 1, 11 或 111
       if (rawFall === 1 || rawFall === 11 || rawFall === 111 ||
           rawFall === "1" || rawFall === "11" || rawFall === "111") {
-        fallCode = Number(rawFall);
+        incomingFallCode = Number(rawFall);
       } else if (rawHumCode === 1 || rawHumCode === 11 || rawHumCode === 111) {
-        fallCode = rawHumCode;
+        incomingFallCode = rawHumCode;
       } else if (rawConfCode === 1 || rawConfCode === 11 || rawConfCode === 111) {
-        fallCode = rawConfCode;
+        incomingFallCode = rawConfCode;
       }
 
       // 2. 联动单片机真实上报的硬件跌倒事件（过滤掉服务端生成的 virtual 模拟事件，只认单片机硬件 source: radar）
-      if (fallCode === 0 && fallEvents && fallEvents.length > 0) {
+      if (fallEvents && fallEvents.length > 0) {
         const radarFall = fallEvents.find(e => e.source === "radar" && !e.handled);
         if (radarFall && radarFall.ts) {
-          const refTime = serverTimeStr ? new Date(serverTimeStr.replace(/-/g, "/")).getTime() : Date.now();
-          const eventTime = new Date(radarFall.ts.replace(/-/g, "/")).getTime();
-          const diffSec = (refTime - eventTime) / 1000;
-          // 如果单片机硬件跌倒事件发生在最近 7 秒内：
-          if (!isNaN(diffSec) && diffSec >= -5 && diffSec <= 7) {
-            const evConf = Number(radarFall.confidence);
-            fallCode = (evConf === 1 || evConf === 11 || evConf === 111) ? evConf : 11;
+          window._currentRadarFallTs = radarFall.ts;
+          // 若该事件未被人工解除过：
+          if (radarFall.ts !== window._lastDismissedEventTs) {
+            const refTime = serverTimeStr ? new Date(serverTimeStr.replace(/-/g, "/")).getTime() : Date.now();
+            const eventTime = new Date(radarFall.ts.replace(/-/g, "/")).getTime();
+            const diffSec = (refTime - eventTime) / 1000;
+            // 只要在最近 60 秒内发生的未解除硬件跌倒事件，均激活：
+            if (!isNaN(diffSec) && diffSec >= -5 && diffSec <= 60) {
+              const evConf = Number(radarFall.confidence);
+              incomingFallCode = (evConf === 1 || evConf === 11 || evConf === 111) ? evConf : 11;
+            }
           }
         }
+      }
+
+      // 人工解除防抖保护：如果看护人员刚点击了【确认知晓】(6秒内)，暂时抑制同一时刻残留的数据包
+      const recentlyDismissed = window._fallDismissedTs && (Date.now() - window._fallDismissedTs < 6000);
+
+      // 3. 永久锁存逻辑：一旦触发跌倒，永久保持报警，直到人工点击【确认知晓】才消失！
+      if (incomingFallCode !== 0 && !recentlyDismissed) {
+        window._fallLatched = true;
+        window._fallLatchedCode = incomingFallCode;
+      }
+
+      let fallCode = 0;
+      if (window._fallLatched) {
+        fallCode = window._fallLatchedCode || incomingFallCode || 111;
       }
 
       const isFall = (fallCode !== 0);
       const fallMeta = isFall ? getFallCodeMeta(fallCode) : null;
 
-      // 同步修正姿态显示（防止服务端虚拟 pose 字段在未跌倒时误显示为跌倒）
-      const effectivePose = isFall ? "falling" : ((pose === "falling") ? (isHuman ? "standing" : "away") : pose);
-      document.getElementById("pose-text").innerText = poseMap[effectivePose] || effectivePose;
+      // 实时读取主板端侧 PINN-CfC 神经网络计算上报的姿态分类代码 (rawHumCode: 20=站立, 21=正常慢走[Class0], 22=快走&急转身[Class1], 23=弯腰&下蹲[Class2], 24=正常)
+      const distNum = parseFloat(dist) || 0;
+      const speedNum = parseFloat(speed) || 0;
+      const absSpeed = Math.abs(speedNum);
+      const prevPt = historyPoints.length > 0 ? historyPoints[historyPoints.length - 1] : null;
+      const distDelta = prevPt ? Math.abs(distNum - prevPt.dist) : 0;
+      const speedTurn = prevPt ? (speedNum * prevPt.speed < -120) : false;
+
+      let poseLabel = "正常";
+      let poseColor = "#2dd4bf";
+      let poseSub = "主板端侧 AI 识别: 正常 (含正常站立与平稳活动)";
+
+      if (isFall) {
+        poseLabel = "摔倒";
+        poseColor = "#ef4444";
+        poseSub = "主板端侧 AI 识别: 失衡摔倒 (Class 2)";
+      } else if (!isHuman) {
+        poseLabel = "离开未在场";
+        poseColor = "#94a3b8";
+        poseSub = "雷达视野内暂无人活动";
+      } else if (rawHumCode === 23 || data.pose === "bend_squat" || data.pose === "sitting") {
+        poseLabel = "弯腰 & 下蹲";
+        poseColor = "#fbbf24";
+        const hText = (typeof data.h_m === "number" && data.h_m > 0) ? ` (离地高度: ${data.h_m.toFixed(2)}m)` : "";
+        poseSub = "双雷达判定: 原地弯腰 / 下蹲受控姿态" + hText;
+      } else {
+        poseLabel = "正常";
+        poseColor = "#2dd4bf";
+        const hText = (typeof data.h_m === "number" && data.h_m > 0) ? ` | 质心高度: ${data.h_m.toFixed(2)}m` : "";
+        poseSub = "双雷达强互锁: 正常活动" + hText;
+      }
+
+      const poseTextEl = document.getElementById("pose-text");
+      const humanSubEl = document.getElementById("human-detect-sub");
+      if (poseTextEl) {
+        poseTextEl.innerText = poseLabel;
+        poseTextEl.style.color = poseColor;
+      }
+      if (humanSubEl) {
+        humanSubEl.innerText = poseSub;
+      }
 
       const fallBadge = document.getElementById("fall-badge");
       const fallStatusText = document.getElementById("fall-status-text");
@@ -955,6 +1257,91 @@
         currentFallState = false;
       }
 
+      // 浴室滞留时长实时累计与超限预警 (长者在浴室持续有人且超 40 分钟)
+      const stayValEl = document.getElementById("stay-val");
+      const stayBadgeEl = document.getElementById("stay-badge");
+      const staySubEl = document.getElementById("stay-subtext");
+      const stayCardEl = document.getElementById("card-stay");
+      const STAY_TIMEOUT_SEC = 40 * 60; // 40 分钟预警阈值 (2400 秒)
+
+      if (isHuman) {
+        window._humanLeaveTimer = null; // 重置离开判定
+        if (!window._humanEnterMs) {
+          window._humanEnterMs = Date.now();
+        }
+        const staySec = Math.floor((Date.now() - window._humanEnterMs) / 1000);
+        const mins = Math.floor(staySec / 60);
+        const secs = staySec % 60;
+        const durationStr = `${mins}分${secs < 10 ? '0' : ''}${secs}秒`;
+
+        if (stayValEl) {
+          stayValEl.innerText = durationStr;
+        }
+
+        if (staySec >= STAY_TIMEOUT_SEC) {
+          // 超过 40 分钟 (2400秒)
+          if (stayValEl) stayValEl.style.color = "#f59e0b";
+          if (stayBadgeEl) {
+            stayBadgeEl.className = "badge badge-warning";
+            stayBadgeEl.innerText = "⚠️ 滞留超时";
+          }
+          if (staySubEl) {
+            staySubEl.innerHTML = `<span style="color: #fbbf24; font-weight: 700;">⚠️ 已滞留超 40 分钟，请留意确认</span>`;
+          }
+          if (stayCardEl) {
+            stayCardEl.style.borderColor = "#f59e0b";
+          }
+
+          // 触发警告（单次持续进入仅触发一次，显示 3 秒后自动消失，并同步推送微信/QQ）
+          if (!window._stayAlertTriggered) {
+            window._stayAlertTriggered = true;
+            showStayTimeoutAlert(staySec);
+            sendStayTimeoutPush(staySec, {
+              time: ts,
+              temp: temp,
+              dist: dist,
+              speed: speed,
+              deviceId: data.device_id || "MM001"
+            });
+          }
+        } else {
+          // 仍在 40 分钟以内，正常计时
+          if (stayValEl) stayValEl.style.color = "#2dd4bf";
+          if (stayBadgeEl) {
+            stayBadgeEl.className = "badge badge-info";
+            stayBadgeEl.innerText = "实时计时";
+          }
+          if (staySubEl) {
+            staySubEl.innerHTML = `<span>当前洗浴/活动时间正常</span>`;
+          }
+          if (stayCardEl) {
+            stayCardEl.style.borderColor = "var(--border-color)";
+          }
+        }
+      } else {
+        // 无人时：延迟 3 秒确认离开，防止偶发单帧丢包
+        if (!window._humanLeaveTimer) {
+          window._humanLeaveTimer = Date.now();
+        } else if (Date.now() - window._humanLeaveTimer >= 3000) {
+          window._humanEnterMs = null;
+          window._stayAlertTriggered = false;
+          if (stayValEl) {
+            stayValEl.innerText = "无人滞留";
+            stayValEl.style.color = "#94a3b8";
+          }
+          if (stayBadgeEl) {
+            stayBadgeEl.className = "badge badge-secondary";
+            stayBadgeEl.innerText = "未在场";
+          }
+          if (staySubEl) {
+            staySubEl.innerHTML = `<span>长者已离开浴室</span>`;
+          }
+          if (stayCardEl) {
+            stayCardEl.style.borderColor = "var(--border-color)";
+          }
+        }
+      }
+
       // 更新雷达绘图状态
       radarTarget.dist = Math.min(Math.max(parseFloat(dist) || 0, 0), 8);
       radarTarget.speed = parseFloat(speed) || 0;
@@ -970,9 +1357,11 @@
           temp: parseFloat(temp) || 25,
           dist: parseFloat(dist) || 0,
           speed: parseFloat(speed) || 0,
+          h: rawH > 0.05 ? rawH : null,
+          vdrop: typeof data.v_drop_ms !== "undefined" ? rawVdrop : null,
           fall: isFall,
           fallCode: fallCode,
-          pose: poseMap[effectivePose] || effectivePose,
+          pose: poseLabel,
           human: isHuman
         });
 
@@ -994,11 +1383,21 @@
         fallCellHtml = `<span style='color: #ef4444; font-weight: 700;'>🚨 跌倒 [触发代码: ${meta.code}]</span>`;
       }
 
+      const hHtml = (item.h !== null && item.h !== undefined)
+        ? `<b style="color: #c084fc;">${item.h.toFixed(2)} m</b>`
+        : `<span style="color: #64748b;">--</span>`;
+
+      const vdHtml = (item.vdrop !== null && item.vdrop !== undefined)
+        ? `<b style="color: ${item.vdrop >= 0.6 ? '#ef4444' : '#f472b6'};">${item.vdrop > 0 ? '+' : ''}${item.vdrop.toFixed(2)} m/s</b>`
+        : `<span style="color: #64748b;">--</span>`;
+
       tr.innerHTML = `
         <td>${item.time}</td>
         <td>${item.temp} ℃</td>
         <td>${item.dist} m</td>
         <td>${item.speed} cm/s</td>
+        <td>${hHtml}</td>
+        <td>${vdHtml}</td>
         <td>${item.human ? "👤 有人" : "⚪ 无人"}</td>
         <td>${item.pose}</td>
         <td>${fallCellHtml}</td>
