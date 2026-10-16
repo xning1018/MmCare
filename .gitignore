@@ -1,8 +1,24 @@
-# Keil / Arm temporary build logs and debug logs
+# ============================================
+# Keil MDK / Arm Compiler 6 编译构建产物
+# ============================================
+Objects/
+Listings/
+DebugConfig/
+outputs/tmp/
+*.uvguix.*
+*.uvoptx.bak
+*.bak
+*.dep
+*.iex
+*.scvd
+*.map
+*.lst
+
+# ============================================
+# 临时日志与调试记录
+# ============================================
 *.log
 *.ini
-*.scvd
-*.iex
 build_out.txt
 build_result.txt
 extracted_blocks.txt
@@ -10,14 +26,26 @@ extracted_details.txt
 proto_clean.txt
 protocol_full.txt
 scratch_*.txt
-read_page23.py
-gen_doc.py
 page*.png
 page_*.png
+read_page23.py
+gen_doc.py
 
-# Python cache
+# ============================================
+# Python 运行缓存
+# ============================================
 __pycache__/
 *.pyc
+*.pyo
 
-# Local backup duplicates / intermediate
-Objects/Mmcare_latest.hex
+# ============================================
+# 本地人肉备份与历史快照（推荐使用 git tag 管理历史版本）
+# ============================================
+Backup_*/
+backups/
+*backup*.html
+*backup*.txt
+*backup*.csv
+*backup*.npz
+dashboard_today_backup.html
+deploy_clean_server.txt
