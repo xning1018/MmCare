@@ -1,0 +1,23 @@
+# Keil / Arm temporary build logs and debug logs
+*.log
+*.ini
+*.scvd
+*.iex
+build_out.txt
+build_result.txt
+extracted_blocks.txt
+extracted_details.txt
+proto_clean.txt
+protocol_full.txt
+scratch_*.txt
+read_page23.py
+gen_doc.py
+page*.png
+page_*.png
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Local backup duplicates / intermediate
+Objects/Mmcare_latest.hex

@@ -2,6 +2,7 @@
  * radar_display.c
  * LD6002C OLED 显示（与 fall_alarm 报警状态对齐）
  * ================================================================ */
+#if 0
 
 #include "radar_display.h"
 #include <string.h>
@@ -241,3 +242,5 @@ void RadarDisplay_Update(radar_data_t *data, const fall_alarm_status_t *alarm) {
     _draw_debug_line(data);
   }
 }
+
+#endif

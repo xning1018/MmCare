@@ -1,5 +1,5 @@
-./objects/hal_entry.o: src\hal_entry.c API\buzzer.h ra_gen\hal_data.h \
-  ra\fsp\inc\api\bsp_api.h ra\fsp\inc\fsp_common_api.h \
+./objects/hal_entry.o: src\hal_entry.c API\ai_fall_engine.h \
+  ra_gen\hal_data.h ra\fsp\inc\api\bsp_api.h ra\fsp\inc\fsp_common_api.h \
   ra\fsp\inc\fsp_version.h ra_cfg\fsp_cfg\bsp\bsp_cfg.h \
   ra_gen\bsp_clock_cfg.h ra_cfg\fsp_cfg\bsp\bsp_mcu_family_cfg.h \
   ra_cfg\fsp_cfg\bsp\bsp_mcu_device_pn_cfg.h \
@@ -43,6 +43,7 @@
   ra\fsp\inc\instances\r_gpt.h ra\fsp\inc\instances\r_dac.h \
   ra_cfg\fsp_cfg\r_dac_cfg.h ra\fsp\inc\api\r_dac_api.h \
   ra\fsp\inc\instances\r_iic_master.h ra_cfg\fsp_cfg\r_iic_master_cfg.h \
-  ra\fsp\inc\api\r_i2c_master_api.h API\fall_alarm.h API\radar_uart.h \
-  API\ld2450.h API\led.h API\light_sensor.h API\ml307r.h API\my1680.h \
-  API\ntc_temp.h API\oled.h API\radar_uart.h
+  ra\fsp\inc\api\r_i2c_master_api.h API\ld2450.h API\radar_uart.h \
+  API\buzzer.h API\fall_alarm.h API\ld2450.h API\led.h \
+  API\light_sensor.h API\ml307r.h API\my1680.h API\ntc_temp.h API\oled.h \
+  API\radar_uart.h

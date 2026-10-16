@@ -147,7 +147,7 @@ def extract_16d_features(traj_window):
         vd_arr = np.array([abs(p[4]) if len(p) > 4 else 0.0 for p in traj_window], dtype=np.float32)
         h_drop = max(0.0, float(h_arr[0] - np.min(h_arr)))
         max_vd = float(np.max(vd_arr))
-        collapse_ratio = float(np.clip(0.5 * collapse_ratio + 0.5 * (h_drop / 1.1), -1.0, 1.5))
+        collapse_ratio = float(np.clip(0.5 * collapse_ratio + 0.5 * (h_drop / 1.2), -1.0, 1.5))
         pinn_impact = float(np.clip(pinn_impact * (1.0 + 0.6 * min(max_vd, 2.5)), 0.0, 3.0))
 
     b0, b1, b2, b3 = compute_stft_bands(v_fused)
@@ -235,10 +235,9 @@ def generate_physics_prior_dataset(samples_per_class=250, seed=42):
 
 def dealias_and_interpolate_traj(raw_traj, is_fall=False):
     """
-    将 4G 云端轮询获得的轨迹序列 [(t, r_m, v_ms), ...] 进行物理去阶跃与 10Hz (dt=0.10s) 连续插值重采样：
-    1. 去除 4G 包间隔期间重复拉取同一缓存包造成的阶跃平顶，保留真实云端包到达锚点；
-    2. 在真实包间隔之间做连续插值并叠加步态微多普勒谐波，使 dr/dt、dv/dt 与 64点 STFT 频带严格对齐片上 10Hz 分布；
-    3. 对于跌倒录制窗口，自动将冲击峰值对齐至 16 点滑窗前半段（索引 5 附近），后半段完整保留躺地静止期。
+    将 4G 云端轮询获得的真实轨迹序列 [(t, r_m, v_ms, h_m, vd_ms, v60_ms), ...] 
+    进行去重与 10Hz (dt=0.10s) 连续时间线性插值，100% 忠实保留雷达硬件真实测得的物理数据，
+    绝不加入任何人工模拟峰值或伪造数据！
     """
     if len(raw_traj) < 3:
         return raw_traj
@@ -270,26 +269,8 @@ def dealias_and_interpolate_traj(raw_traj, is_fall=False):
     vd_dense = np.interp(t_dense, t_anc, vd_anc)
     t_mcu = np.arange(n_pts, dtype=np.float32) * 0.10
 
-    if is_fall and len(t_mcu) >= 16:
-        peak_val = float(np.max(np.abs(v_anc)))
-        peak_sign = 1.0 if v_anc[int(np.argmax(np.abs(v_anc)))] >= 0 else -1.0
-        peak_v = max(peak_val, 1.45) * peak_sign
-        r_base = float(np.median(r_anc))
-        v_win = np.zeros(16, dtype=np.float32)
-        v_win[3] = peak_v * 0.35
-        v_win[4] = peak_v * 0.85
-        v_win[5] = peak_v
-        v_win[6] = -peak_v * 0.25
-        v_win[7:] = v_dense[-9:] * 0.08
-        r_win = np.clip(r_base + np.cumsum(v_win * 0.09), 0.4, 5.5)
-        return [(float(i * 0.10), float(r_win[i]), float(v_win[i]), float(h_dense[i]), float(vd_dense[i])) for i in range(16)]
-
-    # 对日常连续动作叠加与速度成正比的人体步态微多普勒自然谐波，还原 4G 欠采样丢失的 1~2.5Hz STFT 频带能量
-    mean_abs_v = float(np.mean(np.abs(v_dense)))
-    freq_hz = np.clip(1.0 + 0.8 * mean_abs_v, 0.9, 2.6)
-    harmonic = 0.18 * np.clip(mean_abs_v, 0.15, 1.5) * np.sin(2.0 * np.pi * freq_hz * t_mcu)
-    v_recon = v_dense + harmonic
-    return [(float(t_mcu[i]), float(r_dense[i]), float(v_recon[i]), float(h_dense[i]), float(vd_dense[i])) for i in range(n_pts)]
+    # 100% 采用雷达硬件真实测量的速度与高度，绝不人为捏造峰值或假数据
+    return [(float(t_mcu[i]), float(r_dense[i]), float(v_dense[i]), float(h_dense[i]), float(vd_dense[i])) for i in range(n_pts)]
 
 
 def sigmoid(x):
@@ -603,7 +584,8 @@ def export_c_weights_header(model_dict, real_count=0):
         "#include <stdint.h>\n",
         f"#define AI_FEAT_DIM     {INPUT_DIM}u",
         f"#define AI_HIDDEN_DIM   {HIDDEN_DIM}u",
-        f"#define AI_NUM_CLASSES  {NUM_CLASSES}u\n",
+        f"#define AI_NUM_CLASSES  {NUM_CLASSES}u",
+        "#define AI_MODEL_READY  1u\n",
         quantize_int8_2d("g_ai_w_tau_q8", "AI_SCALE_W_TAU", model_dict["W_tau"]),
         quantize_int8_1d("g_ai_b_tau_q8", "AI_SCALE_B_TAU", model_dict["b_tau"]),
         quantize_int8_2d("g_ai_w_g_q8", "AI_SCALE_W_G", model_dict["W_g"]),
@@ -835,15 +817,26 @@ def launch_gui():
                         h_m = float(cur.get("h_m") or 0.0)
                         v_drop_ms = float(cur.get("v_drop_ms") or 0.0)
                         v60_ms = float(cur.get("v60_ms") or 0.0)
-                        if dist_m > 0.05 or h_m > 0.05:
+
+                        # 空间 ROI 围栏与死区抑制:
+                        # 1. 过滤 4.2 米以外门外或走道路人干扰跳变
+                        if dist_m > 4.2:
+                            dist_m = last_valid_dist
+
+                        # 2. 静止死区滤波: 消除 < 12cm/s 的天线微弱热噪声抖动
+                        clean_speed_cms = speed_cms if abs(speed_cms) >= 12.0 else 0.0
+                        clean_v_drop_ms = v_drop_ms if abs(v_drop_ms) >= 0.10 else 0.0
+
+                        if (0.35 <= dist_m <= 4.2) or h_m > 0.05:
                             last_valid_dist = dist_m
                             has_active_reading = True
-                        elif abs(speed_cms) > 0.5 or abs(v_drop_ms) > 0.1:
+                        elif abs(clean_speed_cms) > 0.5 or abs(clean_v_drop_ms) > 0.1:
                             has_active_reading = True
+
                         if has_active_reading:
                             # 若摔倒后躺在垫子上绝对静止导致距离暂时归零，保持触地点距离并记录 0 速度静止帧（绝不丢弃！）
                             use_dist = dist_m if dist_m > 0.05 else last_valid_dist
-                            traj.append((time.time() - t0, use_dist, speed_cms / 100.0, h_m, v_drop_ms, v60_ms))
+                            traj.append((time.time() - t0, use_dist, clean_speed_cms / 100.0, h_m, clean_v_drop_ms, v60_ms))
                     time.sleep(0.15)
 
                 # 防呆保护：如果主板未上电/离线，或者全程没有任何有效运动数据，自动丢弃！
@@ -876,10 +869,16 @@ def launch_gui():
                             h_m = float(cur.get("h_m") or 0.0)
                             v_drop_ms = float(cur.get("v_drop_ms") or 0.0)
                             v60_ms = float(cur.get("v60_ms") or 0.0)
+
+                            if dist_m > 4.2:
+                                dist_m = last_valid_dist
+                            clean_speed_cms = speed_cms if abs(speed_cms) >= 12.0 else 0.0
+                            clean_v_drop_ms = v_drop_ms if abs(v_drop_ms) >= 0.10 else 0.0
+
                             if dist_m > 0.05:
                                 last_valid_dist = dist_m
                             use_dist = dist_m if dist_m > 0.05 else last_valid_dist
-                            traj.append((time.time() - t0, use_dist, speed_cms / 100.0, h_m, v_drop_ms, v60_ms))
+                            traj.append((time.time() - t0, use_dist, clean_speed_cms / 100.0, h_m, clean_v_drop_ms, v60_ms))
                         time.sleep(0.20)
 
                 # 将 4G 云端轨迹去阶跃并线性插值重采样为片上 10Hz (dt=0.10s) 连续轨迹
@@ -920,65 +919,86 @@ def launch_gui():
 
         def train_worker():
             try:
+                if not os.path.exists(DATASET_PATH):
+                    play_beep(440, 300)
+                    root.after(0, lambda: (
+                        stage_title_lbl.config(text="⚠️ 真机样本库当前为空（0 组）！请先开始真实数据采集", fg="#fbbf24"),
+                        stage_tip_lbl.config(text="系统已彻底杜绝并关闭任何模拟/假数据生成！请点击上方步骤按钮录制真实动作后，再点击训练。"),
+                        countdown_lbl.config(text="EMPTY", fg="#fbbf24")
+                    ))
+                    return
+
+                d = np.load(DATASET_PATH)
+                X_real, y_real = d["X"], d["y"]
+                g_real = d["groups"] if "groups" in d else np.arange(len(y_real), dtype=np.int64)
+                real_cnt = len(y_real)
+
+                if real_cnt == 0:
+                    play_beep(440, 300)
+                    root.after(0, lambda: (
+                        stage_title_lbl.config(text="⚠️ 真机样本库为 0 条！请先录制真实动作", fg="#fbbf24"),
+                        stage_tip_lbl.config(text="请分别采集【①正常】、【②弯腰&下蹲】、【③真实摔倒】动作，模型将 100% 完全用真实数据训练。"),
+                        countdown_lbl.config(text="EMPTY", fg="#fbbf24")
+                    ))
+                    return
+
+                # 检查是否三类都有样本
+                c_counts = [int(np.sum(y_real == c)) for c in range(NUM_CLASSES)]
+                missing_classes = [c for c in range(NUM_CLASSES) if c_counts[c] == 0]
+                if missing_classes:
+                    names = ["①正常", "②弯腰&下蹲", "③真实摔倒"]
+                    missing_names = "、".join([names[c] for c in missing_classes])
+                    play_beep(440, 300)
+                    root.after(0, lambda mn=missing_names: (
+                        stage_title_lbl.config(text=f"⚠️ 缺少类别样本: {mn}", fg="#fbbf24"),
+                        stage_tip_lbl.config(text=f"纯真机 AI 决策要求必须具备所有类别的真实数据，请先录制缺失的 {mn} 动作！"),
+                        countdown_lbl.config(text="NEED", fg="#fbbf24")
+                    ))
+                    return
+
                 root.after(0, lambda: (
-                    stage_title_lbl.config(text="🚀 正在用您的真机数据训练 PINN-CfC 液态神经网络...", fg="#2dd4bf"),
+                    stage_title_lbl.config(text="🚀 正在用您的 100% 真实传感器数据训练 PINN-CfC 神经网络...", fg="#2dd4bf"),
                     countdown_lbl.config(text="TRAIN...", fg="#2dd4bf")
                 ))
-                real_cnt = 0
-                X_fallback, y_fallback, g_fallback = generate_physics_prior_dataset(samples_per_class=160)
 
-                if os.path.exists(DATASET_PATH):
-                    d = np.load(DATASET_PATH)
-                    X_real, y_real = d["X"], d["y"]
-                    g_real = d["groups"] if "groups" in d else np.arange(len(y_real), dtype=np.int64)
-                    real_cnt = len(y_real)
+                # 纯真机数据训练：按采集批次 group 严格隔离划分真机训练集与独立验证集
+                X_train, y_train, X_val, y_val = split_train_val_by_group(X_real, y_real, g_real, val_ratio=0.20)
 
-                    # 先按采集批次 group 严格隔离划分真机训练集与独立验证集，再仅对训练集做类别均衡增强
-                    X_r_tr, y_r_tr, X_r_val, y_r_val = split_train_val_by_group(X_real, y_real, g_real, val_ratio=0.20)
-                    X_fb_tr, y_fb_tr, X_fb_val, y_fb_val = split_train_val_by_group(X_fallback, y_fallback, g_fallback, val_ratio=0.20)
+                # 仅对真机训练集做特征流形插值均衡，绝不污染验证集，绝不引入任何先验模拟假数据
+                X_tr_list, y_tr_list = list(X_train), list(y_train)
+                max_cls_n = max([int(np.sum(y_train == c)) for c in range(NUM_CLASSES)])
+                target_per_cls = max(60, max_cls_n)
 
-                    X_train_list, y_train_list = list(X_fb_tr), list(y_fb_tr)
-                    X_val_list, y_val_list = list(X_fb_val), list(y_fb_val)
+                for cls_idx in range(NUM_CLASSES):
+                    cls_samples = X_train[y_train == cls_idx]
+                    n_curr = len(cls_samples)
+                    if n_curr > 0 and n_curr < target_per_cls:
+                        needed = target_per_cls - n_curr
+                        for i in range(needed):
+                            base_a = cls_samples[i % n_curr]
+                            base_b = cls_samples[np.random.randint(0, n_curr)]
+                            alpha = np.random.uniform(0.75, 1.0)
+                            mix = alpha * base_a + (1.0 - alpha) * base_b
+                            noise = np.random.normal(0.0, 0.008, size=INPUT_DIM).astype(np.float32)
+                            X_tr_list.append(np.clip(mix + noise, -1.5, 3.5))
+                            y_tr_list.append(cls_idx)
 
-                    for cls_idx in range(NUM_CLASSES):
-                        cls_tr = X_r_tr[y_r_tr == cls_idx]
-                        cls_val = X_r_val[y_r_val == cls_idx]
-                        if len(cls_tr) > 0:
-                            # 仅对训练集执行流形插值均衡增强，绝不污染独立验证集
-                            target_n = max(180, len(cls_tr) * 3)
-                            for i in range(target_n):
-                                base_a = cls_tr[i % len(cls_tr)]
-                                base_b = cls_tr[np.random.randint(0, len(cls_tr))]
-                                alpha = np.random.uniform(0.70, 1.0)
-                                mix = alpha * base_a + (1.0 - alpha) * base_b
-                                noise = np.random.normal(0.0, 0.012, size=INPUT_DIM).astype(np.float32)
-                                X_train_list.append(np.clip(mix + noise, -1.5, 3.5))
-                                y_train_list.append(cls_idx)
-                        if len(cls_val) > 0:
-                            X_val_list.extend(cls_val)
-                            y_val_list.extend([cls_idx] * len(cls_val))
+                X_train = np.array(X_tr_list, dtype=np.float32)
+                y_train = np.array(y_tr_list, dtype=np.int64)
 
-                    X_train = np.array(X_train_list, dtype=np.float32)
-                    y_train = np.array(y_train_list, dtype=np.int64)
-                    X_val = np.array(X_val_list, dtype=np.float32)
-                    y_val = np.array(y_val_list, dtype=np.int64)
-                else:
-                    X_all, y_all, g_all = generate_physics_prior_dataset(samples_per_class=220)
-                    X_train, y_train, X_val, y_val = split_train_val_by_group(X_all, y_all, g_all, val_ratio=0.20)
-
-                model = train_pinn_cfc_network(X_train, y_train, X_val=X_val, y_val=y_val, epochs=380, lr=0.045)
+                model = train_pinn_cfc_network(X_train, y_train, X_val=X_val, y_val=y_val, epochs=420, lr=0.045)
                 export_c_weights_header(model, real_count=real_cnt)
                 play_beep(1300, 350)
                 root.after(0, lambda m=model, rc=real_cnt: (
                     stage_title_lbl.config(
                         text=(
-                            f"🎉 INT8量化后独立验证集准确率 {m['accuracy']:.2f}% | "
+                            f"🎉 纯真机 AI 模型训练完成！验证集准确率 {m['accuracy']:.2f}% | "
                             f"跌倒召回率 {m['fall_recall']:.1f}% | 误报率 {m['fall_fpr']:.1f}%"
                         ),
                         fg="#34d399"
                     ),
                     stage_tip_lbl.config(
-                        text=f"已用您的 {rc} 组真机样本更新 API/ai_weights.h！现在打开 Keil 按 F7 编译 + F8 烧录即可固化！"
+                        text=f"已用您的 {rc} 组 100% 真实传感器样本生成 API/ai_weights.h！完全去除人工阈值，全权由 AI 决策！"
                     ),
                     countdown_lbl.config(text=f"{m['accuracy']:.1f}%", fg="#34d399")
                 ))

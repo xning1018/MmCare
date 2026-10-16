@@ -12,6 +12,7 @@ typedef struct {
   uint8_t Msk[32]; // 16x16 汉字占用 32 字节字模
 } ChineseCell_t;
 
+#if 0
 /* 固化在 Flash 中的汉字字库 (你提取的标准逐行式数据) */
 const ChineseCell_t OLED_CH[] = {
     {"雷", {0x20, 0x18, 0x0A, 0xAA, 0xAA, 0xAA, 0x0A, 0xFE, 0x0A, 0xAA, 0xAA,
@@ -51,6 +52,7 @@ const ChineseCell_t OLED_CH[] = {
             0x00, 0x8F, 0x40, 0x30, 0x0F, 0x10, 0x20, 0xCF, 0x00, 0x00}},
 
 };
+#endif
 #pragma clang diagnostic pop /* 恢复编译器警告设置 */
 
 /* 固化在 Flash 中的标准 8x16 英文及数字字库 (列行式) */

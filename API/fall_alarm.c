@@ -39,9 +39,9 @@ void FallAlarm_Init(void)
 
 static bool _raw_fall_condition(const radar_data_t *p_data)
 {
-    /* 站立与下蹲一票否决：质心高度 > 1.0m，或者高度在下蹲区间(0.65~1.05m)且下坠停止，坚决不触发跌倒！ */
-    if (p_data->height_updated && (p_data->height_floor_m > 1.00f ||
-        (p_data->height_floor_m >= 0.65f && p_data->height_floor_m <= 1.05f && p_data->pc_v_drop_ms < 0.40f)))
+    /* 站立与下蹲一票否决：质心高度 > 1.30m，或者高度在未倒地弯腰区间(1.20~1.30m)且无垂直下坠(pc_v_drop_ms < 0.30f)，坚决不触发跌倒！ */
+    if (p_data->height_updated && (p_data->height_floor_m > 1.30f ||
+        (p_data->height_floor_m >= 1.20f && p_data->height_floor_m <= 1.30f && p_data->pc_v_drop_ms < 0.30f)))
     {
         return false;
     }

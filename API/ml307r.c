@@ -157,7 +157,7 @@ bool ML307R_CheckNetwork(void) {
 bool ML307R_HttpPost(const char *url, const char *json_payload) {
   /* 腾讯云域名极长，host 数组必须扩容到 128 字节，否则必定爆内存死机 */
   static char cmd_buf[256];
-  static char http_buf[512]; // 稍微放大，防止超长域名拼接时溢出
+  static char http_buf[1024]; // 扩容至 1024 字节，彻底杜绝未来新增 JSON 字段及超长路径时的越界风险
 
   static char host[128];
   static char path[128];
@@ -192,27 +192,24 @@ bool ML307R_HttpPost(const char *url, const char *json_payload) {
     return false;
   }
 
-  // 【STAGE 1】彻底闭合 0 号 Socket 连接（防止底层状态挂起导致 55 错误）
+  // 【STAGE 1】快速闭合 0 号 Socket 连接（防止底层状态挂起导致 55 错误）
   g_http_stage = 1;
-  // OLED_ShowString(3, 1, "STAGE: 1 (CLOSE)");
 
-  // 快速闭合连接，超时设为 150ms 避免因未连接而空等 1 秒
-  ML307R_SendCmd("AT+MIPCLOSE=0\r\n", "OK", 150);
-  R_BSP_SoftwareDelay(20, BSP_DELAY_UNITS_MILLISECONDS);
+  // 稳妥闭合连接，超时设为 80ms 确保模组完成底层释放
+  ML307R_SendCmd("AT+MIPCLOSE=0\r\n", "OK", 80);
 
   // 【STAGE 2】发起标准 TCP 连接
   g_http_stage = 2;
-  // OLED_ShowString(3, 1, "STAGE: 2 (CONN) ");
 
   sprintf(cmd_buf, "AT+MIPOPEN=0,\"TCP\",\"%s\",%d\r\n", host, port);
 
-  // 等待建立连接（常规在 1.5~3 秒内完成）
-  if (!ML307R_SendCmd(cmd_buf, "+MIPOPEN: 0,0", 5000)) {
+  // 等待建立连接（紧缩超时至 1800ms，快速失败，避免卡死主循环）
+  if (!ML307R_SendCmd(cmd_buf, "+MIPOPEN: 0,0", 1800)) {
     // === 【防错重试机制】 ===
-    if (strstr((char *)g_rx_buf, "55") != NULL) {
-      ML307R_SendCmd("AT+MIPCLOSE=0\r\n", "OK", 300);
-      R_BSP_SoftwareDelay(200, BSP_DELAY_UNITS_MILLISECONDS);
-      if (ML307R_SendCmd(cmd_buf, "+MIPOPEN: 0,0", 4000)) {
+    if (strstr((char *)g_rx_buf, "55") != NULL || strstr((char *)g_rx_buf, "ERROR") != NULL) {
+      ML307R_SendCmd("AT+MIPCLOSE=0\r\n", "OK", 100);
+      R_BSP_SoftwareDelay(80, BSP_DELAY_UNITS_MILLISECONDS);
+      if (ML307R_SendCmd(cmd_buf, "+MIPOPEN: 0,0", 1500)) {
         goto __conn_ok;
       }
     }
@@ -254,7 +251,7 @@ __conn_ok:
       FSP_SUCCESS)
     return false;
   uint32_t tx_timeout = 0;
-  while (!g_uart9_tx_complete && tx_timeout < 500) {
+  while (!g_uart9_tx_complete && tx_timeout < 100) {
     R_BSP_SoftwareDelay(1, BSP_DELAY_UNITS_MILLISECONDS);
     tx_timeout++;
   }
@@ -266,7 +263,7 @@ __conn_ok:
       ready = true;
       break;
     }
-    if (g_system_tick - t_start >= 1500)
+    if (g_system_tick - t_start >= 300)
       break;
     R_BSP_SoftwareDelay(10, BSP_DELAY_UNITS_MILLISECONDS);
     System_Yield();
@@ -285,12 +282,12 @@ __conn_ok:
                        (uint32_t)http_len) != FSP_SUCCESS)
     return false;
   tx_timeout = 0;
-  while (!g_uart9_tx_complete && tx_timeout < 500) {
+  while (!g_uart9_tx_complete && tx_timeout < 100) {
     R_BSP_SoftwareDelay(1, BSP_DELAY_UNITS_MILLISECONDS);
     tx_timeout++;
   }
 
-  // 【STAGE 6】等待服务器返回 HTTP 状态码 200 OK
+  // 【STAGE 6】等待服务器返回 HTTP 状态码 200 OK (紧缩超时至 1500ms，极速响应)
   g_http_stage = 6;
   t_start = g_system_tick;
   while (1) {
@@ -305,13 +302,13 @@ __conn_ok:
         LED_Off();
       }
 
-      ML307R_SendCmd("AT+MIPCLOSE=0\r\n", "OK", 200);
+      ML307R_SendCmd("AT+MIPCLOSE=0\r\n", "OK", 80);
       g_4g_status = ML307R_STAT_NET_OK;
       strcpy(g_4g_status_tag, "OK");
       strcpy(g_4g_diag_info, "POST 200 OK");
       return true;
     }
-    if (g_system_tick - t_start >= 4000)
+    if (g_system_tick - t_start >= 1500)
       break;
     R_BSP_SoftwareDelay(10, BSP_DELAY_UNITS_MILLISECONDS);
     System_Yield();
@@ -324,10 +321,15 @@ __conn_ok:
     strcpy(g_http_last_resp, "NO 200 OK RESP");
 
 __exit:
-  ML307R_SendCmd("AT+MIPCLOSE=0\r\n", "OK", 500);
+  ML307R_SendCmd("AT+MIPCLOSE=0\r\n", "OK", 80);
   g_4g_status = ML307R_STAT_POST_ERR;
   strcpy(g_4g_status_tag, "FAIL");
   strncpy(g_4g_diag_info, g_http_last_resp, 16);
   g_4g_diag_info[16] = '\0';
   return false;
+}
+
+void ML307R_ResetSocket(void) {
+  ML307R_SendCmd("AT+MIPCLOSE=0\r\n", "OK", 100);
+  ML307R_SendCmd("AT+MIPCALL?\r\n", "+MIPCALL: 1", 500);
 }

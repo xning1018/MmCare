@@ -11,12 +11,11 @@
 extern "C" {
 #endif
 
-/* 4 类人体姿态流形定义（与上位机引导式训练工具严格对齐） */
+/* 3 类人体姿态流形定义（与上位机引导式训练工具严格对齐） */
 typedef enum {
-    AI_POSTURE_SLOW_WALK  = 0, /* Class 0: 正常慢走 */
-    AI_POSTURE_FAST_TURN  = 1, /* Class 1: 快步走 / 急转身 / 挥手 */
-    AI_POSTURE_BEND_SQUAT = 2, /* Class 2: 原地弯腰 / 慢速下蹲 */
-    AI_POSTURE_FALL_ALARM = 3  /* Class 3: 失衡急剧跌倒并触地静止 */
+    AI_POSTURE_NORMAL_SHOWER = 0, /* Class 0: 正常（含正常慢走、微动、站立） */
+    AI_POSTURE_BEND_SQUAT    = 1, /* Class 1: 原地弯腰 / 慢速下蹲 / 坐下 */
+    AI_POSTURE_FALL_ALARM    = 2  /* Class 2: 失衡急剧跌倒并触地静止 */
 } AI_PostureClass_t;
 
 /* 端侧 AI 引擎实时状态输出结构体 */
@@ -28,9 +27,9 @@ typedef struct {
     float    filtered_r_m;
     float    filtered_v_ms;
 
-    /* LD2450 PINN-CfC 液态神经网络 4 分类概率与姿态判别结果 */
+    /* LD2450 PINN-CfC 液态神经网络 3 分类概率与姿态判别结果 */
     AI_PostureClass_t posture_class;
-    float    class_probs[4];
+    float    class_probs[3];
     float    fall_confidence;
     float    physics_residual;
 

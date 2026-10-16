@@ -89,6 +89,7 @@ void OLED_ShowNum(uint8_t Line, uint8_t Column, uint32_t Number, uint8_t Length)
         OLED_ShowChar(Line, Column + i, Number / OLED_Pow(10, Length - i - 1) % 10 + '0');
 }
 
+#if 0
 void OLED_ShowSignedNum(uint8_t Line, uint8_t Column, int32_t Number, uint8_t Length)
 {
     uint8_t i;
@@ -125,9 +126,6 @@ void OLED_ShowBinNum(uint8_t Line, uint8_t Column, uint32_t Number, uint8_t Leng
         OLED_ShowChar(Line, Column + i, Number / OLED_Pow(2, Length - i - 1) % 2 + '0');
 }
 
-/* ========================================================== */
-
-/* ========================================================== */
 void OLED_ShowChineseString(uint8_t Line, uint8_t Column, char *ChineseString)
 {
     uint32_t i = 0;
@@ -190,6 +188,7 @@ void OLED_ShowChineseString(uint8_t Line, uint8_t Column, char *ChineseString)
         }
     }
 }
+#endif
 
 void OLED_Init(void)
 {

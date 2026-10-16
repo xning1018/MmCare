@@ -34,5 +34,6 @@ bool ML307R_CheckNetwork(void);
 
 /* 银尔达官方流 HTTP POST  */
 bool ML307R_HttpPost(const char *url, const char *json_payload);
+void ML307R_ResetSocket(void);
 
 #endif /* ML307R_H */

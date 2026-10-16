@@ -37,7 +37,7 @@
 #define AI_PC60_WIN_LEN         16u     /* LD6002C 三维点云多参数滑动窗口长度 (与 Python 训练严格对齐为 16 点) */
 #define AI_STFT_WIN_LEN         16u     /* STFT 汉宁短窗长度 */
 #define AI_STFT_FFT_LEN         64u     /* 零填充基2 FFT 点数 */
-#define AI_FALL_HOLD_MS         8000u   /* 端侧 AI 检出跌倒后的最小报警保持时间 (ms) */
+#define AI_FALL_HOLD_MS         15000u  /* 端侧 AI 检出跌倒后的报警持续保持时间 15s (ms) */
 #define AI_ENABLE_ONLINE_RLS    0       /* 默认关闭未受人工审核的在线伪标签自训练，防止误报自我强化 */
 
 /* ----------------------------------------------------------------------------
@@ -115,6 +115,39 @@ static uint32_t       s_last_step_tick = 0;
 static uint32_t       s_ai_fall_latch_tick = 0;
 static bool           s_ai_fall_latched = false;
 static bool           s_pf_initialized = false;
+
+/* ----------------------------------------------------------------------------
+ * 姿态分类施密特迟滞状态机与时间滤波计数器 (抗抖动核心)
+ * ---------------------------------------------------------------------------- */
+static AI_PostureClass_t s_stable_posture = AI_POSTURE_NORMAL_SHOWER;
+static uint8_t           s_posture_bend_count = 0;
+static uint8_t           s_posture_stand_count = 0;
+
+/* 纯 AI 姿态平滑滤波：完全由神经网络分类结果驱动，消除人工阈值 */
+static AI_PostureClass_t ai_update_posture_state(uint32_t ai_best_cls, bool is_falling_alarm) {
+    if (is_falling_alarm) {
+        s_stable_posture = AI_POSTURE_FALL_ALARM;
+        s_posture_bend_count = 0;
+        s_posture_stand_count = 0;
+        return s_stable_posture;
+    }
+
+    if (ai_best_cls == AI_POSTURE_BEND_SQUAT) {
+        s_posture_bend_count++;
+        s_posture_stand_count = 0;
+        if (s_posture_bend_count >= 2) {
+            s_stable_posture = AI_POSTURE_BEND_SQUAT;
+        }
+    } else {
+        s_posture_stand_count++;
+        s_posture_bend_count = 0;
+        if (s_posture_stand_count >= 2) {
+            s_stable_posture = AI_POSTURE_NORMAL_SHOWER;
+        }
+    }
+
+    return s_stable_posture;
+}
 
 /* ----------------------------------------------------------------------------
  * Cortex-M33 硬件单精度 FPU 内联算子
@@ -220,10 +253,13 @@ static bool ai_particle_filter_update(const LD2450_Data_t *p_ld2450,
             float ym = (float)p_ld2450->target[i].y / 1000.0f;
             float vm = (float)p_ld2450->target[i].speed / 100.0f;
             float rm = ai_sqrtf(xm * xm + ym * ym);
-            if (rm > 0.15f && rm < 6.5f) {
+            /* 3D 空间 ROI 围栏过滤与浴帘屏蔽(0.40m)与零速死区抑制:
+             * 1. 过滤浴帘极近场杂波 (Y<0.40m) 与雷达视野边缘 (Y>4.2m 或 |X|>2.2m)
+             * 2. 抑制 < 0.10m/s 的环境微弱多径残余底噪，防止无谓刷新与粒子受牵引 */
+            if (ym >= 0.40f && ym <= 4.20f && ai_fabsf(xm) <= 2.20f && rm >= 0.40f && rm <= 4.50f) {
                 obs_x[valid_cnt] = xm;
                 obs_y[valid_cnt] = ym;
-                obs_v[valid_cnt] = vm;
+                obs_v[valid_cnt] = (ai_fabsf(vm) < 0.10f) ? 0.0f : vm;
                 valid_cnt++;
             }
         }
@@ -576,7 +612,7 @@ static void ai_pinn_cfc_forward(const float feat[AI_FEAT_DIM],
 
         float h_target = tau_gate * g_act + (1.0f - tau_gate) * pinn_act;
 
-        float tau_time_const = 0.08f + 0.25f * tau_gate;
+        float tau_time_const = 0.08f + 0.92f * tau_gate;
         float decay = ai_expf(-dt_clamped / tau_time_const);
         liquid_state[j] = decay * liquid_state[j] + (1.0f - decay) * h_target;
         h_instant[j]    = 0.80f * h_target + 0.20f * liquid_state[j];
@@ -681,8 +717,9 @@ static bool ai_ld6002c_multiparam_step(const radar_data_t *p_ld6002c, uint32_t c
         float r_3d  = ai_sqrtf(raw_x * raw_x + raw_y * raw_y + raw_z * raw_z);
         if (r_3d < 0.10f) r_3d = raw_y;
 
-        float cur_v  = p_ld6002c->speed_m_s;
-        float v_drop = p_ld6002c->pc_v_drop_ms;
+        /* 抑制微弱静止多径跳动底噪 (< 0.10m/s 置零) */
+        float cur_v  = (p_ld6002c->speed_m_s >= 0.10f) ? p_ld6002c->speed_m_s : 0.0f;
+        float v_drop = (ai_fabsf(p_ld6002c->pc_v_drop_ms) >= 0.10f) ? p_ld6002c->pc_v_drop_ms : 0.0f;
         float acc_3d = p_ld6002c->pc_acc_3d_ms2;
         float aspect = p_ld6002c->pc_span_horiz_m / (p_ld6002c->pc_span_vert_m + 0.12f);
 
@@ -844,22 +881,20 @@ static bool ai_ld6002c_multiparam_step(const radar_data_t *p_ld6002c, uint32_t c
             ai_pinn_cfc_forward(feat_60, dt_cfc_b, s_liquid_h_60, probs_60, h_vec_60);
 
             s_ai_state.ld6002c_fall_score = probs_60[AI_POSTURE_FALL_ALARM];
-
-            /* 由 PINN-CfC 神经网络的 Class 3 (跌倒) 概率 + 相对物理守恒触发（仅在开机 5 秒热机稳定后允许触发） */
-            if (current_tick_ms >= 5000u &&
-                probs_60[AI_POSTURE_FALL_ALARM] >= 0.56f &&
-                max_v >= 0.38f && post_stillness >= 0.42f && collapse_ratio >= 0.25f) {
+            uint32_t b60 = 0;
+            for (uint32_t c = 1; c < AI_NUM_CLASSES; c++) {
+                if (probs_60[c] > probs_60[b60]) b60 = c;
+            }
+            /* 纯 AI 跌倒决策：完全由神经网络分类判决输出决定，跌倒类别为最高概率即触发 */
+            if (current_tick_ms >= 5000u && b60 == AI_POSTURE_FALL_ALARM) {
                 s_ld6002c_fall_latched = true;
                 s_ld6002c_fall_latch_tick = current_tick_ms;
+            } else if (b60 == AI_POSTURE_NORMAL_SHOWER || (current_tick_ms - s_ld6002c_fall_latch_tick > 1500u)) {
+                s_ld6002c_fall_latched = false;
             }
 
-            /* 若 PINN-CfC 识别到人体已恢复正常慢走/快走 (Class 0/1)，自动解除锁存 */
-            if (s_ld6002c_fall_latched && (current_tick_ms - s_ld6002c_fall_latch_tick > 3000u)) {
-                if ((probs_60[AI_POSTURE_SLOW_WALK] > 0.55f || probs_60[AI_POSTURE_FAST_TURN] > 0.55f) &&
-                    cur_v > 0.35f) {
-                    s_ld6002c_fall_latched = false;
-                }
-            }
+            /* 稳定姿态输出完全由 AI 前向分类结果 b60 驱动 */
+            s_ai_state.posture_class = ai_update_posture_state(b60, s_ld6002c_fall_latched);
         }
     }
 
@@ -900,6 +935,9 @@ void AI_FallEngine_Init(void) {
     s_ai_fall_latch_tick = 0;
     s_ai_fall_latched = false;
     s_pf_initialized = false;
+    s_stable_posture = AI_POSTURE_NORMAL_SHOWER;
+    s_posture_bend_count = 0;
+    s_posture_stand_count = 0;
 
     /* 1. 初始化 1024 空间粒子均匀分布在雷达视野中心区域 */
     float inv_n = 1.0f / (float)AI_NUM_PARTICLES;
@@ -937,7 +975,7 @@ void AI_FallEngine_Init(void) {
     }
 
     s_ai_state.class_probs[0] = 1.0f;
-    s_ai_state.posture_class = AI_POSTURE_SLOW_WALK;
+    s_ai_state.posture_class = AI_POSTURE_NORMAL_SHOWER;
 }
 
 bool AI_FallEngine_Step(const LD2450_Data_t *p_ld2450,
@@ -955,6 +993,10 @@ bool AI_FallEngine_Step(const LD2450_Data_t *p_ld2450,
 
     /* 2. 独立运行【通道 A：LD2450 1024 粒子滤波与 PINN-CfC 液态网络引擎】 */
     if (p_ld2450 != NULL) {
+        /* 防重入与时序对齐：LD2450 为 10Hz (100ms 一帧)，间隔 < 75ms 判定为重入，直接跳过滤波与前向计算 */
+        if (s_last_step_tick > 0u && (current_tick_ms - s_last_step_tick < 75u)) {
+            return (s_ai_state.combined_fall_code != 0);
+        }
         s_last_step_tick = current_tick_ms;
 
         float fx_m = 0.0f, fy_m = 0.0f, fv_ms = 0.0f;
@@ -1007,25 +1049,16 @@ bool AI_FallEngine_Step(const LD2450_Data_t *p_ld2450,
                         best_cls = c;
                     }
                 }
-                s_ai_state.posture_class = (AI_PostureClass_t)best_cls;
-
-                bool kinetic_valid = (feat[3] >= 0.42f) && (feat[10] >= 0.40f) && (phys_res < 2.2f);
-                bool pinn_direct_fall = (feat[3] >= 0.55f) && (feat[6] >= 0.35f) &&
-                                        (feat[9] >= 0.32f) && (feat[10] >= 0.52f);
-
-                /* 仅在开机/复位满 5 秒后允许锁存跌倒报警 */
-                if (current_tick_ms >= 5000u &&
-                    ((probs[AI_POSTURE_FALL_ALARM] >= 0.56f && kinetic_valid) || pinn_direct_fall)) {
+                /* 纯 AI 跌倒决策：完全由 PINN-CfC 神经网络分类输出驱动，跌倒类别为最高概率即触发 */
+                if (current_tick_ms >= 5000u && best_cls == AI_POSTURE_FALL_ALARM) {
                     s_ai_fall_latched = true;
                     s_ai_fall_latch_tick = current_tick_ms;
+                } else if (best_cls == AI_POSTURE_NORMAL_SHOWER || (current_tick_ms - s_ai_fall_latch_tick > 1500u)) {
+                    s_ai_fall_latched = false;
                 }
 
-                if (s_ai_fall_latched && (current_tick_ms - s_ai_fall_latch_tick > 3000u)) {
-                    if (ai_fabsf(fv_ms) > 0.48f &&
-                        (best_cls == AI_POSTURE_SLOW_WALK || best_cls == AI_POSTURE_FAST_TURN)) {
-                        s_ai_fall_latched = false;
-                    }
-                }
+                /* 姿态分类完全由 AI 分类结果 best_cls 驱动 */
+                s_ai_state.posture_class = ai_update_posture_state(best_cls, s_ai_fall_latched);
 
 #if AI_ENABLE_ONLINE_RLS
                 if (ld6002c_fall_now && feat[3] >= 0.35f) {
@@ -1045,18 +1078,18 @@ bool AI_FallEngine_Step(const LD2450_Data_t *p_ld2450,
         }
     }
 
-    /* 3. 双雷达独立并行触发合成（满足任意一路，或两路同时触发，均立即报警！） */
+    /* 3. 双雷达 AI 合成状态输出（完全由端侧 AI 判定，彻底无人工门限） */
     s_ai_state.ld2450_ai_fall_triggered = s_ai_fall_latched;
     s_ai_state.ld6002c_fall_triggered   = ld6002c_fall_now;
 
     if (s_ai_state.ld2450_ai_fall_triggered && s_ai_state.ld6002c_fall_triggered) {
-        s_ai_state.combined_fall_code = 11;  /* 双雷达同时触发报警 */
+        s_ai_state.combined_fall_code = 11;  /* 双雷达端侧 AI 均判定为跌倒 */
     } else if (s_ai_state.ld2450_ai_fall_triggered) {
-        s_ai_state.combined_fall_code = 111; /* LD2450 端侧 AI 独立触发报警 */
+        s_ai_state.combined_fall_code = 111; /* LD2450 端侧 AI 判定为跌倒 */
     } else if (s_ai_state.ld6002c_fall_triggered) {
-        s_ai_state.combined_fall_code = 1;   /* LD6002C 多参数引擎独立触发报警 */
+        s_ai_state.combined_fall_code = 1;   /* LD6002C 端侧 AI 判定为跌倒 */
     } else {
-        s_ai_state.combined_fall_code = 0;   /* 正常状态 */
+        s_ai_state.combined_fall_code = 0;   /* AI 判定为正常 */
     }
 
     return (s_ai_state.combined_fall_code != 0);

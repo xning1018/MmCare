@@ -19,10 +19,13 @@
 #define TF_TYPE_FW_VER 0xFFFFu      /* 固件版本 */
 
 /* ================================================================
- * 安装高度配置（单位: 米）
+ * 安装高度与角度配置（壁装向下俯角倾斜模式，抗浴帘微动）
  * ================================================================ */
-#define RADAR_MOUNT_HEIGHT 2.2f
-#define RADAR_HEIGHT_RAW_MAX 5.0f
+#define RADAR_MOUNT_HEIGHT          2.10f   /* 顶部壁装挂高 2.1 米 */
+#define RADAR_TILT_SIN              0.5736f /* 俯仰角约 35 度 sin(35°) (覆盖 30°~45°) */
+#define RADAR_TILT_COS              0.8192f /* 俯仰角约 35 度 cos(35°) */
+#define RADAR_CURTAIN_CUTOFF_M      0.40f   /* 浴帘屏蔽盲区门限: 0.40m 以内近场彻底滤除 */
+#define RADAR_HEIGHT_RAW_MAX        5.0f
 
 /* 点云数据极大，至少需要256字节的 Payload 空间，否则合法帧会被状态机丢弃 */
 #define RADAR_RX_BUF_SIZE 2048u
@@ -57,6 +60,7 @@ typedef struct {
   float pc_avg_x_m;       /* 3D 点云质心横向坐标 X (m) */
   float pc_avg_z_m;       /* 3D 点云质心前向距离 Z (m) */
   float pc_v_drop_ms;     /* 质心垂直向地面跌落速度 -dH/dt (m/s, 正值表示向下坠落) */
+  float pc_peak_drop_ms;  /* 跌落窗口内最大垂直坠落速度峰值 (m/s) */
   float pc_acc_3d_ms2;    /* 3D 点云运动加速度 (m/s^2) */
   float pc_span_vert_m;   /* 3D 点云垂直高度跨度 (m) */
   float pc_span_horiz_m;  /* 3D 点云水平展开跨度 (m) */
@@ -88,7 +92,5 @@ radar_data_t *Radar_GetData(void);
 void radar_uart_callback(uart_callback_args_t *p_args);
 void Radar_SendFrame(uint16_t type, const uint8_t *p_data, uint16_t len);
 void Radar_SendMountHeight(float height_m);
-void Radar_SendInit(float high, float threshold, uint32_t sensitivity,
-                    float rect_xl, float rect_xr, float rect_zf, float rect_zb);
 
 #endif /* RADAR_UART_H_ */

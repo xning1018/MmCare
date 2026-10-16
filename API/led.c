@@ -86,3 +86,21 @@ void LED210_Toggle(void) {
                                                              : BSP_IO_LEVEL_HIGH;
   LED_Write(LED_PIN_210, g_led_210_status);
 }
+
+void LED_White_On(void) {
+  g_led_405_status = BSP_IO_LEVEL_LOW;
+  g_led_202_status = BSP_IO_LEVEL_LOW;
+  g_led_604_status = BSP_IO_LEVEL_LOW;
+  LED_Write(LED_PIN_405, g_led_405_status);
+  LED_Write(LED_PIN_202, g_led_202_status);
+  LED_Write(LED_PIN_604, g_led_604_status);
+}
+
+void LED_White_Off(void) {
+  g_led_405_status = BSP_IO_LEVEL_HIGH;
+  g_led_202_status = BSP_IO_LEVEL_HIGH;
+  g_led_604_status = BSP_IO_LEVEL_HIGH;
+  LED_Write(LED_PIN_405, g_led_405_status);
+  LED_Write(LED_PIN_202, g_led_202_status);
+  LED_Write(LED_PIN_604, g_led_604_status);
+}

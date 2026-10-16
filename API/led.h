@@ -25,4 +25,7 @@ void LED210_On(void);
 void LED210_Off(void);
 void LED210_Toggle(void);
 
+void LED_White_On(void);
+void LED_White_Off(void);
+
 #endif
